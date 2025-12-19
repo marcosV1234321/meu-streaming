@@ -7,74 +7,114 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+
     <style>
         :root { --red: #e50914; --black: #141414; }
         body { background: var(--black); color: white; font-family: Arial, sans-serif; margin: 0; overflow-x: hidden; }
         .hidden { display: none !important; }
         
         /* HEADER */
-        header { background: rgba(0,0,0,0.8); padding: 15px 4%; display: flex; justify-content: space-between; align-items: center; position: fixed; width: 100%; top: 0; z-index: 1000; box-sizing: border-box; }
-        .logo { color: var(--red); font-size: 24px; font-weight: bold; }
+        header { background: rgba(0,0,0,0.9); padding: 15px 4%; display: flex; justify-content: space-between; align-items: center; position: fixed; width: 100%; top: 0; z-index: 1000; box-sizing: border-box; border-bottom: 1px solid #333; }
+        .logo { color: var(--red); font-size: 24px; font-weight: bold; cursor: pointer; }
 
-        /* TELA LOGIN */
-        #login-screen { height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://assets.nflxext.com/ffe/siteui/vlv3/f841d4c7-10e1-40af-bca1-07e3f8eb14af/BR-pt-20220502-perspective_alpha_website_medium.jpg'); background-size: cover; }
-        .login-box { background: rgba(0,0,0,0.8); padding: 40px; border-radius: 8px; width: 90%; max-width: 400px; text-align: center; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; background: #333; border: none; color: white; border-radius: 4px; box-sizing: border-box; }
-        .btn-red { background: var(--red); color: white; border: none; padding: 12px; width: 100%; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        /* BUSCADOR HOVER */
+        .search-container { display: flex; align-items: center; position: relative; margin-right: 20px; }
+        #search-bar { width: 0; padding: 0; opacity: 0; background: #222; border: 1px solid #444; color: white; border-radius: 20px; outline: none; transition: 0.5s; }
+        .search-container:hover #search-bar { width: 200px; padding: 8px 15px; opacity: 1; }
+
+        /* MENU LATERAL */
+        #sidebar { position: fixed; left: -250px; top: 0; width: 200px; height: 100%; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; padding-top: 80px; z-index: 3000; transition: 0.4s; border-right: 1px solid var(--red); }
+        #sidebar.open { left: 0; }
+        .side-item { color: gray; margin: 15px 0; cursor: pointer; display: flex; align-items: center; padding-left: 20px; font-size: 16px; transition: 0.3s; }
+        .side-item:hover { color: white; border-left: 4px solid var(--red); }
+
+        /* LOGIN & CADASTRO */
+        #login-screen { height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://assets.nflxext.com/ffe/siteui/vlv3/f841d4c7-10e1-40af-bca1-07e3f8eb14af/BR-pt-20220502-perspective_alpha_website_medium.jpg'); background-size: cover; }
+        .login-box { background: rgba(0,0,0,0.85); padding: 40px; border-radius: 8px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #333; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; background: #333; border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; }
+        .btn-red { background: var(--red); color: white; border: none; padding: 12px; width: 100%; font-weight: bold; cursor: pointer; border-radius: 4px; transition: 0.3s; }
+        .btn-red:hover { filter: brightness(1.2); }
 
         /* CATALOGO */
-        .content { padding: 80px 4% 20px; }
+        .content { padding: 100px 4% 20px; transition: 0.5s; }
         .row { margin-bottom: 30px; }
         .row-title { font-size: 20px; font-weight: bold; margin-bottom: 10px; }
         .row-cards { display: flex; overflow-x: auto; gap: 10px; padding: 10px 0; scrollbar-width: none; }
-        .row-cards::-webkit-scrollbar { display: none; }
-        .card { min-width: 160px; height: 240px; background-size: cover; border-radius: 4px; cursor: pointer; transition: 0.3s; position: relative; }
-        .card:hover { transform: scale(1.05); }
+        .card { min-width: 160px; height: 240px; background-size: cover; background-position: center; border-radius: 4px; cursor: pointer; transition: 0.3s; }
+        .card:hover { transform: scale(1.05); z-index: 2; border: 2px solid white; }
 
         /* PLAYER MODAL */
-        #player-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 2000; display: none; }
-        .close-player { position: absolute; top: 20px; right: 20px; font-size: 30px; color: white; cursor: pointer; z-index: 2100; }
-        
-        /* ADM */
-        #admin-view { background: #181818; padding: 20px; border-radius: 8px; margin-top: 20px; }
+        #player-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 5000; display: none; }
+        .close-btn { position: absolute; top: 20px; right: 20px; font-size: 30px; color: white; cursor: pointer; z-index: 5100; }
+
+        /* PLANOS */
+        .plan-container { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+        .plan-card { background: #181818; border: 1px solid #333; padding: 25px; border-radius: 12px; width: 220px; text-align: center; }
+        .plan-card h2 { color: var(--red); font-size: 20px; }
+        .plan-price { font-size: 28px; font-weight: bold; margin: 15px 0; }
     </style>
 </head>
 <body>
 
 <div id="login-screen">
     <div class="login-box">
-        <h1 class="logo">MASTER FLIX</h1>
-        <input type="email" id="email" placeholder="E-mail">
-        <input type="password" id="pass" placeholder="Senha">
-        <button class="btn-red" onclick="handleLogin()">ENTRAR</button>
-        <p style="font-size: 14px; color: gray; margin-top: 15px;">Novo aqui? <span onclick="document.getElementById('modal-cadastro').classList.remove('hidden')" style="color:white; cursor:pointer;">Crie sua conta</span></p>
+        <h1 style="color:var(--red); margin-bottom:20px;">MASTER FLIX</h1>
+        <div id="login-form">
+            <input type="email" id="email" placeholder="E-mail">
+            <input type="password" id="pass" placeholder="Senha">
+            <button class="btn-red" onclick="handleLogin()">ENTRAR</button>
+            <p style="margin-top:15px; font-size:14px; color:gray;">Novo por aqui? <span onclick="toggleAuth()" style="color:white; cursor:pointer; font-weight:bold;">Assine agora (7 dias grátis)</span></p>
+        </div>
+        <div id="register-form" class="hidden">
+            <h2 style="font-size:18px;">CRIAR CONTA MASTER</h2>
+            <input type="email" id="new-email" placeholder="Seu melhor e-mail">
+            <input type="password" id="new-pass" placeholder="Crie uma senha (mín. 6 dgt)">
+            <button class="btn-red" onclick="executarCadastro()">CRIAR E INICIAR TESTE</button>
+            <p onclick="toggleAuth()" style="margin-top:15px; color:gray; cursor:pointer;">Já tenho conta</p>
+        </div>
     </div>
 </div>
 
 <div id="app-screen" class="hidden">
     <header>
-        <div class="logo">MASTER FLIX</div>
-        <div>
+        <div style="display:flex; align-items:center;">
+            <span onclick="toggleMenu()" style="font-size:24px; cursor:pointer; margin-right:20px;">☰</span>
+            <div class="logo" onclick="location.reload()">MASTER FLIX</div>
+        </div>
+        <div style="display:flex; align-items:center;">
+            <div class="search-container">
+                <span style="cursor:pointer; margin-right:5px;">🔍</span>
+                <input type="text" id="search-bar" placeholder="Buscar títulos..." oninput="filtrarBusca(this.value)">
+            </div>
             <button id="btn-master" class="hidden" onclick="document.getElementById('admin-view').classList.toggle('hidden')" style="background:var(--red); color:white; border:none; padding:8px 15px; border-radius:4px; font-weight:bold; cursor:pointer;">ADM</button>
             <button onclick="auth.signOut()" style="background:none; border:1px solid white; color:white; padding:7px 12px; border-radius:4px; cursor:pointer; margin-left:10px;">SAIR</button>
         </div>
     </header>
 
+    <div id="sidebar">
+        <div class="side-item" onclick="filtrarCat('all')">🏠 Início</div>
+        <div class="side-item" onclick="filtrarCat('kids')">🧒 Infantil</div>
+        <div class="side-item" onclick="filtrarCat('movie')">🎬 Filmes</div>
+        <div class="side-item" onclick="filtrarCat('tv')">📺 Séries</div>
+        <div style="flex-grow:1"></div>
+        <div class="side-item" onclick="abrirSuporte()">📞 Suporte Master</div>
+    </div>
+
     <div class="content">
-        <div id="admin-view" class="hidden">
-            <h3>PAINEL DE UPLOAD MASTER</h3>
-            <input type="text" id="adm-id" placeholder="ID do TMDB">
+        <div id="admin-view" class="hidden" style="background:#222; padding:20px; border-radius:8px; margin-bottom:30px; border:1px solid var(--red);">
+            <h3>UPLOAD & CONFIGURAÇÕES MASTER</h3>
+            <input type="text" id="adm-id" placeholder="ID TMDB">
             <select id="adm-type"><option value="movie">Filme</option><option value="tv">Série</option></select>
             <input type="text" id="adm-url" placeholder="Link do Vídeo (.mp4 ou Embed)">
-            <input type="text" id="adm-sub" placeholder="Link da Legenda (VTT) - Opcional">
-            <button class="btn-red" onclick="addMedia()">PUBLICAR CONTEÚDO</button>
+            <button class="btn-red" onclick="addMedia()">PUBLICAR</button>
+            <hr style="margin:20px 0; opacity:0.1;">
+            <div id="admin-users-list"></div>
         </div>
 
         <div class="row">
             <p class="row-title">Filmes</p>
             <div id="row-movies" class="row-cards"></div>
         </div>
-
         <div class="row">
             <p class="row-title">Séries</p>
             <div id="row-series" class="row-cards"></div>
@@ -82,13 +122,20 @@
     </div>
 </div>
 
+<div id="pay-screen" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:var(--black); z-index:10000; display:flex; align-items:center; justify-content:center; flex-direction:column; text-align:center;">
+    <h1 style="color:var(--red);">SEU TESTE EXPIROU</h1>
+    <p>Escolha um plano para continuar sua experiência Premium.</p>
+    <div class="plan-container" id="planos-lista"></div>
+    <p onclick="auth.signOut()" style="margin-top:20px; color:gray; cursor:pointer;">Voltar ao Login</p>
+</div>
+
 <div id="player-modal">
-    <span class="close-player" onclick="closePlayer()">✕</span>
+    <span class="close-btn" onclick="fecharPlayer()">✕</span>
     <div id="video-container" style="width:100%; height:100%;"></div>
 </div>
 
 <script>
-    // Configurações do seu Firebase
+    // CONFIGURAÇÃO FIREBASE
     const firebaseConfig = {
         apiKey: "AIzaSyCzxrJMumx3lbjsOXv9JHdXrn29jUg3x_0",
         authDomain: "outflix-9e57d.firebaseapp.com",
@@ -103,10 +150,40 @@
     const db = firebase.database();
     const auth = firebase.auth();
 
+    // VARIÁVEIS DE NEGÓCIO
+    const CONFIG = { zap: "5511999999999", stripe_ouro: "LINK_STRIPE_OURO" };
+
+    // --- AUTENTICAÇÃO E CADASTRO CORRIGIDO ---
+    function toggleAuth() {
+        document.getElementById('login-form').classList.toggle('hidden');
+        document.getElementById('register-form').classList.toggle('hidden');
+    }
+
     async function handleLogin() {
-        const e = document.getElementById('email').value.trim();
-        const p = document.getElementById('pass').value.trim();
-        try { await auth.signInWithEmailAndPassword(e, p); } catch(err) { alert("Erro: " + err.message); }
+        const e = document.getElementById('email').value;
+        const p = document.getElementById('pass').value;
+        try { await auth.signInWithEmailAndPassword(e, p); } catch(err) { alert("Login Inválido!"); }
+    }
+
+    async function executarCadastro() {
+        const email = document.getElementById('new-email').value.trim();
+        const pass = document.getElementById('new-pass').value.trim();
+        if(pass.length < 6) return alert("A senha deve ter 6 dígitos.");
+
+        try {
+            const res = await auth.createUserWithEmailAndPassword(email, pass);
+            const trialDate = new Date();
+            trialDate.setDate(trialDate.getDate() + 7); // Libera 7 dias
+
+            await db.ref('users/' + res.user.uid).set({
+                email: email,
+                role: 'user',
+                valido_ate: trialDate.toISOString(),
+                status: 'trial'
+            });
+            alert("CONTA CRIADA! 7 dias grátis liberados.");
+            location.reload();
+        } catch(e) { alert("Erro: " + e.message); }
     }
 
     auth.onAuthStateChanged(user => {
@@ -114,18 +191,107 @@
             db.ref('users/' + user.uid).on('value', snap => {
                 const u = snap.val();
                 if(!u) return;
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('app-screen').classList.remove('hidden');
-                if(u.role === 'admin') document.getElementById('btn-master').classList.remove('hidden');
+                const expira = new Date(u.valido_ate);
+                const agora = new Date();
+
+                if(agora > expira && u.role !== 'admin') {
+                    mostrarPlanos();
+                } else {
+                    document.getElementById('login-screen').classList.add('hidden');
+                    document.getElementById('pay-screen').classList.add('hidden');
+                    document.getElementById('app-screen').classList.remove('hidden');
+                    if(u.role === 'admin') {
+                        document.getElementById('btn-master').classList.remove('hidden');
+                        renderAdminTools();
+                    }
+                    renderCatalogo();
+                }
             });
         } else {
             document.getElementById('login-screen').classList.remove('hidden');
             document.getElementById('app-screen').classList.add('hidden');
         }
     });
-</script>
 
-<script src="player-core.js"></script>
+    // --- CATÁLOGO E INTERFACE ---
+    function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); }
+
+    function renderCatalogo(filtro = 'all', busca = '') {
+        const rM = document.getElementById('row-movies');
+        const rS = document.getElementById('row-series');
+        db.ref('catalog').on('value', snap => {
+            rM.innerHTML = ""; rS.innerHTML = "";
+            snap.forEach(item => {
+                const m = item.val();
+                if(filtro !== 'all' && m.type !== filtro) return;
+                if(busca && !m.title.toLowerCase().includes(busca.toLowerCase())) return;
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.style.backgroundImage = `url(${m.img})`;
+                card.onclick = () => abrirPlayer(m);
+                if(m.type === 'movie') rM.appendChild(card); else rS.appendChild(card);
+            });
+        });
+    }
+
+    function abrirPlayer(m) {
+        const modal = document.getElementById('player-modal');
+        const container = document.getElementById('video-container');
+        container.innerHTML = `<video controls autoplay style="width:100%; height:100%;"><source src="${m.video}" type="video/mp4"></video>`;
+        modal.style.display = 'block';
+    }
+
+    function fecharPlayer() {
+        document.getElementById('player-modal').style.display = 'none';
+        document.getElementById('video-container').innerHTML = "";
+    }
+
+    function mostrarPlanos() {
+        document.getElementById('pay-screen').classList.remove('hidden');
+        const lista = document.getElementById('planos-lista');
+        lista.innerHTML = `
+            <div class="plan-card"><h2>Plano Ouro</h2><p>4 Telas + 4K</p><div class="plan-price">R$ 44,90</div><button class="btn-red" onclick="irStripe()">CARTÃO</button></div>
+            <div class="plan-card"><h2>PIX Master</h2><p>Liberação Imediata</p><div class="plan-price">R$ 39,90</div><button class="btn-red" style="background:#27ae60" onclick="abrirSuporte('PIX')">PIX</button></div>
+        `;
+    }
+
+    function filtrarBusca(v) { renderCatalogo('all', v); }
+    function filtrarCat(c) { toggleMenu(); renderCatalogo(c); }
+    function abrirSuporte(msg = "") { window.open(`https://wa.me/${CONFIG.zap}?text=Preciso de Ajuda ${msg}`, '_blank'); }
+    function irStripe() { window.location.href = CONFIG.stripe_ouro + "?prefilled_email=" + auth.currentUser.email; }
+
+    // --- ADMIN ---
+    async function addMedia() {
+        const id = document.getElementById('adm-id').value;
+        const type = document.getElementById('adm-type').value;
+        const url = document.getElementById('adm-url').value;
+        const key = "2eaf2fd731f81a77741ecb625b588a40";
+        const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${key}&language=pt-BR`);
+        const d = await res.json();
+        await db.ref('catalog').push({ title: d.title || d.name, img: `https://image.tmdb.org/t/p/w500${d.poster_path}`, video: url, type: type });
+        alert("Publicado!");
+    }
+
+    function renderAdminTools() {
+        db.ref('users').on('value', snap => {
+            const list = document.getElementById('admin-users-list');
+            list.innerHTML = "<h4>GESTÃO DE USUÁRIOS</h4>";
+            snap.forEach(u => {
+                const user = u.val();
+                list.innerHTML += `<div style="padding:5px; border-bottom:1px solid #333; font-size:12px;">${user.email} - <button onclick="liberar('${u.key}')">LIBERAR +30 DIAS</button></div>`;
+            });
+        });
+    }
+
+    function liberar(uid) {
+        const novaData = new Date();
+        novaData.setDate(novaData.getDate() + 30);
+        db.ref('users/' + uid).update({ valido_ate: novaData.toISOString(), status: 'pago' });
+        alert("Liberado!");
+    }
+</script>
 
 </body>
 </html>
+
