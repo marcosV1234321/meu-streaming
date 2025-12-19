@@ -3,79 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MASTER FLIX FINAL</title>
-    
+    <title>MASTER FLIX ULTIMATE</title>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
-    
-    <script src="https://www.gstatic.com/firebasejs/ui/6.0.1/firebase-ui-auth__pt.js"></script>
-    <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/6.0.1/firebase-ui-auth.css" />
 
     <style>
-        :root { --red: #e50914; --black: #141414; --gold: #ffc107; }
-        body { background: var(--black); color: white; font-family: Arial, sans-serif; margin: 0; }
+        :root { --red: #e50914; --black: #141414; --gold: #ffc107; --blue: #007bff; }
+        body { background: var(--black); color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; overflow-x: hidden; }
         .hidden { display: none !important; }
         
-        /* Loader Central */
-        #loader { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: #000; display: flex; flex-direction: column; 
-            align-items: center; justify-content: center; z-index: 9999; 
-        }
-
-        /* Container de Login */
-        #auth-screen { height: 100vh; display: flex; align-items: center; justify-content: center; }
-        .logo-login { color: var(--red); font-size: 3rem; font-weight: bold; margin-bottom: 20px; }
-
-        /* Estilo App */
-        header { background: #000; padding: 15px 4%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
-        .content { padding: 20px 4%; }
+        /* LOADER */
+        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; transition: 0.5s; }
         
-        /* Admin Box */
-        .adm-card { border: 2px solid var(--gold); background: #111; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
-        .user-line { background: #222; padding: 15px; margin: 8px 0; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
-        .badge-adm { background: var(--gold); color: black; }
-        .badge-user { background: #007bff; color: white; }
+        /* LOGIN/REGISTRO */
+        .auth-container { height: 100vh; display: flex; align-items: center; justify-content: center; background: #000; }
+        .auth-box { background: #111; padding: 35px; border-radius: 10px; width: 90%; max-width: 380px; border: 1px solid #333; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 8px 0; background: #333; border: 1px solid #444; color: white; border-radius: 5px; box-sizing: border-box; }
+        .btn-red { background: var(--red); color: white; border: none; padding: 14px; width: 100%; font-weight: bold; cursor: pointer; border-radius: 5px; margin-top: 10px; }
 
-        .row-cards { display: flex; overflow-x: auto; gap: 10px; padding: 15px 0; }
-        .card { min-width: 150px; height: 220px; background-size: cover; border-radius: 5px; cursor: pointer; }
+        /* APP */
+        header { background: #000; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000; }
+        .logo { color: var(--red); font-size: 24px; font-weight: bold; }
+        .content { padding: 20px 5%; }
+
+        /* PAINEL ADM */
+        .adm-panel { background: #111; border: 2px solid var(--gold); padding: 20px; border-radius: 10px; margin-bottom: 30px; }
+        .user-card { background: #222; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 5px solid #444; }
+        .badge { padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; }
+        .badge-master { background: var(--gold); color: black; }
+        .badge-client { background: var(--blue); color: white; }
+        .wa-link { color: #25d366; text-decoration: none; font-weight: bold; display: block; margin-top: 10px; font-size: 14px; }
+
+        /* CATALOGO */
+        .row-cards { display: flex; overflow-x: auto; gap: 12px; padding: 15px 0; scrollbar-width: none; }
+        .card { min-width: 160px; height: 240px; background-size: cover; background-position: center; border-radius: 8px; cursor: pointer; transition: 0.3s; border: 2px solid transparent; }
+        .card:hover { transform: scale(1.05); border-color: white; }
+
+        /* LIGHTS OFF */
+        .lights-off { background: #000 !important; }
+        .lights-off header, .lights-off .content { opacity: 0; pointer-events: none; }
+        
+        /* PLAYER OVERLAY */
+        #player-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9000; display: none; }
     </style>
 </head>
 <body>
 
-    <div id="loader">
-        <h1 style="color:var(--red)">MASTER FLIX</h1>
-        <p>Iniciando sistema seguro...</p>
-    </div>
+<div id="loader">
+    <h1 style="color:var(--red); margin-bottom: 5px;">MASTER FLIX</h1>
+    <p id="loader-msg">Iniciando sistema seguro...</p>
+    <button id="retry-btn" class="hidden" onclick="location.reload()" style="background:none; border:1px solid white; color:white; padding:5px 15px; border-radius:5px; cursor:pointer;">Recarregar Sistema</button>
+</div>
 
-    <div id="auth-screen" class="hidden">
-        <div style="text-align:center">
-            <div class="logo-login">MASTER FLIX</div>
-            <div id="firebaseui-auth-container"></div>
+<div id="auth-screen" class="auth-container hidden">
+    <div class="auth-box">
+        <h2 style="color:var(--red); margin-bottom: 25px;">ACESSO MASTER</h2>
+        <div id="login-form">
+            <input type="email" id="email" placeholder="E-mail">
+            <input type="password" id="pass" placeholder="Senha">
+            <button class="btn-red" onclick="entrar()">ENTRAR</button>
+            <p onclick="toggleForm('reg')" style="color:gray; font-size: 14px; cursor:pointer; margin-top:15px;">Novo usuário? <span style="color:white">Cadastrar</span></p>
+        </div>
+        <div id="reg-form" class="hidden">
+            <input type="email" id="n-email" placeholder="E-mail">
+            <input type="password" id="n-pass" placeholder="Senha">
+            <input type="text" id="n-phone" placeholder="WhatsApp (DDD + Número)">
+            <input type="text" id="n-addr" placeholder="Endereço">
+            <button class="btn-red" onclick="cadastrar()">CRIAR CONTA</button>
+            <p onclick="toggleForm('log')" style="color:gray; font-size: 14px; cursor:pointer; margin-top:15px;">Já tem conta? <span style="color:white">Entrar</span></p>
         </div>
     </div>
+</div>
 
-    <div id="app-screen" class="hidden">
-        <header>
-            <div style="color:var(--red); font-size: 1.5rem; font-weight: bold;">MASTER FLIX</div>
-            <button onclick="sair()" style="background:none; color:gray; border:1px solid #333; cursor:pointer; padding:5px 15px;">Sair</button>
-        </header>
-
-        <div class="content">
-            <div id="painel-master" class="hidden adm-card">
-                <h2 style="color:var(--gold)">GERENCIAMENTO MASTER</h2>
-                <div id="lista-usuarios">Buscando base de dados...</div>
-            </div>
-
-            <h2>Filmes e Séries</h2>
-            <div id="catalogo-geral" class="row-cards"></div>
+<div id="app-screen" class="hidden">
+    <header>
+        <div class="logo">MASTER FLIX</div>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <button id="btn-adm-toggle" class="hidden" onclick="toggleAdmPanel()" style="background:var(--gold); border:none; padding:7px 12px; font-weight:bold; border-radius:4px; cursor:pointer;">PAINEL MASTER</button>
+            <button onclick="deslogar()" style="background:none; border:1px solid #444; color:gray; padding:7px 12px; border-radius:4px; cursor:pointer;">SAIR</button>
         </div>
+    </header>
+
+    <div class="content">
+        <div id="adm-panel" class="hidden adm-panel">
+            <h3 style="color:var(--gold); margin-top:0;">GERENCIAR CLIENTES (CRM)</h3>
+            <div id="lista-usuarios">Carregando lista...</div>
+            
+            <h3 style="color:var(--gold); margin-top:30px;">ADICIONAR CONTEÚDO</h3>
+            <input type="text" id="m-id" placeholder="ID TMDB (ex: 550)">
+            <select id="m-type"><option value="movie">Filme</option><option value="tv">Série</option></select>
+            <input type="text" id="m-url" placeholder="Link do Vídeo (.mp4)">
+            <button class="btn-red" onclick="postarMidia()">PUBLICAR AGORA</button>
+        </div>
+
+        <h3 style="border-left: 4px solid var(--red); padding-left: 10px;">Lançamentos</h3>
+        <div id="row-geral" class="row-cards"></div>
     </div>
+</div>
+
+<div id="player-overlay">
+    <div style="position:absolute; top:20px; right:20px; z-index:10000; display:flex; gap:10px;">
+        <button onclick="document.body.classList.toggle('lights-off')" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:10px; border-radius:50%; cursor:pointer;">💡</button>
+        <button onclick="fecharPlayer()" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:10px; border-radius:50%; cursor:pointer;">✕</button>
+    </div>
+    <div id="player-container" style="width:100%; height:100%;"></div>
+</div>
 
 <script>
-    // Inicialização do Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyCzxrJMumx3lbjsOXv9JHdXrn29jUg3x_0",
         authDomain: "outflix-9e57d.firebaseapp.com",
@@ -83,110 +118,124 @@
         databaseURL: "https://outflix-9e57d-default-rtdb.asia-southeast1.firebasedatabase.app"
     };
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const auth = firebase.auth();
+    const db = firebase.database(), auth = firebase.auth();
 
-    // Configuração do Plugin UI
-    const ui = new firebaseui.auth.AuthUI(auth);
-    const uiConfig = {
-        signInOptions: [firebase.auth.EmailAuthProvider.PROVIDER_ID],
-        signInFlow: 'popup',
-        callbacks: { signInSuccessWithAuthResult: () => false }
-    };
-
-    // --- LÓGICA DE CARREGAMENTO (ANTI-TRAVAMENTO) ---
-    
-    // 1. Timeout de emergência: se não carregar em 6s, mostra o login
-    const safetyTimeout = setTimeout(() => {
-        if (!document.getElementById('loader').classList.contains('hidden')) {
-            console.log("Timeout atingido, forçando tela de login.");
-            document.getElementById('loader').classList.add('hidden');
-            document.getElementById('auth-screen').classList.remove('hidden');
-            ui.start('#firebaseui-auth-container', uiConfig);
+    // SEGURANÇA CONTRA TRAVAMENTO
+    setTimeout(() => {
+        if(!document.getElementById('loader').classList.contains('hidden')) {
+            document.getElementById('retry-btn').classList.remove('hidden');
+            document.getElementById('loader-msg').innerText = "Conexão lenta detectada...";
         }
-    }, 6000);
+    }, 4000);
 
-    // 2. Monitor de Usuário Real-time
-    auth.onAuthStateChanged(async (user) => {
-        clearTimeout(safetyTimeout); // Cancela o timeout se o Firebase responder
-        
-        if (user) {
-            try {
-                const snap = await db.ref('users/' + user.uid).once('value');
-                let uData = snap.val();
+    // CONTROLE DE SESSÃO
+    auth.onAuthStateChanged(async user => {
+        const loader = document.getElementById('loader');
+        const app = document.getElementById('app-screen');
+        const login = document.getElementById('auth-screen');
 
-                // Se logou mas não tem registro no banco, cria como 'user'
-                if (!uData) {
-                    const exp = new Date(); exp.setDate(exp.getDate() + 7);
-                    uData = { email: user.email, role: 'user', valido_ate: exp.toISOString(), phone: 'Não cadastrado' };
-                    await db.ref('users/' + user.uid).set(uData);
+        if(user) {
+            const snap = await db.ref('users/' + user.uid).once('value');
+            const u = snap.val();
+            if(u) {
+                if(new Date() > new Date(u.valido_ate) && u.role !== 'admin') {
+                    alert("Sua conta expirou!"); deslogar(); return;
                 }
-
-                iniciarApp(uData, user.uid);
-            } catch (error) {
-                console.error("Erro ao ler banco:", error);
-                alert("Erro de conexão com o banco de dados.");
-            }
+                loader.classList.add('hidden');
+                login.classList.add('hidden');
+                app.classList.remove('hidden');
+                if(u.role === 'admin') document.getElementById('btn-adm-toggle').classList.remove('hidden');
+                carregarCatalogo();
+            } else { deslogar(); }
         } else {
-            // Não logado
-            document.getElementById('loader').classList.add('hidden');
-            document.getElementById('app-screen').classList.add('hidden');
-            document.getElementById('auth-screen').classList.remove('hidden');
-            ui.start('#firebaseui-auth-container', uiConfig);
+            loader.classList.add('hidden');
+            app.classList.add('hidden');
+            login.classList.remove('hidden');
         }
     });
 
-    function iniciarApp(uData, uid) {
-        document.getElementById('loader').classList.add('hidden');
-        document.getElementById('auth-screen').classList.add('hidden');
-        document.getElementById('app-screen').classList.remove('hidden');
-
-        // Se for Master, libera o painel e a lista
-        if (uData.role === 'admin') {
-            document.getElementById('painel-master').classList.remove('hidden');
-            carregarUsuariosMaster();
-        }
-
-        carregarFilmes();
+    // FUNÇÕES DE AUTH
+    function toggleForm(m) {
+        document.getElementById('login-form').classList.toggle('hidden', m === 'reg');
+        document.getElementById('reg-form').classList.toggle('hidden', m === 'log');
     }
 
-    function carregarUsuariosMaster() {
-        db.ref('users').on('value', snap => {
-            const list = document.getElementById('lista-usuarios');
-            list.innerHTML = "";
-            snap.forEach(child => {
-                const u = child.val();
-                const isAdmin = u.role === 'admin';
-                list.innerHTML += `
-                    <div class="user-line">
-                        <div>
-                            <span class="badge ${isAdmin ? 'badge-adm' : 'badge-user'}">${u.role}</span>
-                            <b>${u.email}</b>
-                        </div>
-                        <a href="https://wa.me/55${u.phone}" target="_blank" style="color:#25d366; text-decoration:none; font-weight:bold;">ZAP</a>
-                    </div>
-                `;
+    async function entrar() {
+        const e = document.getElementById('email').value.trim(), p = document.getElementById('pass').value.trim();
+        if(!e || !p) return alert("Preencha e-mail e senha!");
+        try { await auth.signInWithEmailAndPassword(e, p); } catch(err) { alert("Acesso negado: verifique os dados."); }
+    }
+
+    async function cadastrar() {
+        const e = document.getElementById('n-email').value, p = document.getElementById('n-pass').value;
+        const t = document.getElementById('n-phone').value, a = document.getElementById('n-addr').value;
+        if(!e || !p || !t || !a) return alert("Todos os campos são obrigatórios!");
+        try {
+            const res = await auth.createUserWithEmailAndPassword(e, p);
+            const exp = new Date(); exp.setDate(exp.getDate() + 7); // 7 dias grátis
+            await db.ref('users/' + res.user.uid).set({ email:e, phone:t, address:a, role:'user', valido_ate: exp.toISOString() });
+            location.reload();
+        } catch(err) { alert(err.message); }
+    }
+
+    function deslogar() { auth.signOut().then(() => location.reload()); }
+
+    // LOGICA MASTER (ADM)
+    function toggleAdmPanel() {
+        const p = document.getElementById('adm-panel');
+        p.classList.toggle('hidden');
+        if(!p.classList.contains('hidden')) {
+            db.ref('users').on('value', snap => {
+                const list = document.getElementById('lista-usuarios');
+                list.innerHTML = "";
+                snap.forEach(child => {
+                    const u = child.val();
+                    const isM = u.role === 'admin';
+                    list.innerHTML += `
+                        <div class="user-card" style="border-left-color: ${isM ? 'var(--gold)' : 'var(--blue)'}">
+                            <span class="badge ${isM ? 'badge-master' : 'badge-client'}">${u.role}</span><br>
+                            <b>Email:</b> ${u.email}<br>
+                            <b>Endereço:</b> ${u.address}<br>
+                            <a href="https://wa.me/55${u.phone}" target="_blank" class="wa-link">🟢 WHATSAPP: ${u.phone}</a>
+                            <small style="color:gray">Vencimento: ${new Date(u.valido_ate).toLocaleDateString()}</small><br>
+                            <button onclick="db.ref('users/${child.key}').update({role:'admin'})" style="margin-top:10px; cursor:pointer; font-size:10px;">Promover Master</button>
+                        </div>`;
+                });
             });
-        });
+        }
     }
 
-    function carregarFilmes() {
+    async function postarMidia() {
+        const id = document.getElementById('m-id').value, type = document.getElementById('m-type').value, url = document.getElementById('m-url').value;
+        if(!id || !url) return alert("ID e Link necessários!");
+        const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=2eaf2fd731f81a77741ecb625b588a40&language=pt-BR`);
+        const d = await res.json();
+        await db.ref('catalog').push({ title: d.title || d.name, img: `https://image.tmdb.org/t/p/w500${d.poster_path}`, video: url, type: type, sinopse: d.overview });
+        alert("Publicado com sucesso!");
+    }
+
+    // CATALOGO E PLAYER
+    function carregarCatalogo() {
         db.ref('catalog').on('value', snap => {
-            const container = document.getElementById('catalogo-geral');
+            const container = document.getElementById('row-geral');
             container.innerHTML = "";
             snap.forEach(i => {
                 const m = i.val();
                 const card = document.createElement('div');
-                card.className = 'card';
-                card.style.backgroundImage = `url(${m.img})`;
-                card.onclick = () => window.open(m.video, '_blank');
+                card.className = 'card'; card.style.backgroundImage = `url(${m.img})`;
+                card.onclick = () => {
+                    document.getElementById('player-container').innerHTML = `<video controls autoplay style="width:100%; height:100%;"><source src="${m.video}" type="video/mp4"></video>`;
+                    document.getElementById('player-overlay').style.display = 'block';
+                };
                 container.appendChild(card);
             });
         });
     }
 
-    function sair() {
-        auth.signOut().then(() => location.reload());
+    function fecharPlayer() {
+        document.getElementById('player-overlay').style.display = 'none';
+        document.getElementById('player-container').innerHTML = "";
+        document.body.classList.remove('lights-off');
     }
 </script>
 </body>
