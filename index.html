@@ -3,50 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MASTER FLIX SECURITY</title>
+    <title>MASTER FLIX FINAL</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+    
     <script src="https://www.gstatic.com/firebasejs/ui/6.0.1/firebase-ui-auth__pt.js"></script>
     <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/6.0.1/firebase-ui-auth.css" />
 
     <style>
-        :root { --red: #e50914; --black: #141414; }
-        body { background: var(--black); color: white; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; }
+        :root { --red: #e50914; --black: #141414; --gold: #ffc107; }
+        body { background: var(--black); color: white; font-family: Arial, sans-serif; margin: 0; }
         .hidden { display: none !important; }
         
-        /* Loader */
-        #loader { height: 100vh; display: flex; align-items: center; justify-content: center; background: #000; position: fixed; width: 100%; z-index: 9999; }
-        
-        /* Auth Container */
-        #auth-container { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .welcome-text { color: var(--red); font-size: 2rem; font-weight: bold; margin-bottom: 20px; }
+        /* Loader Central */
+        #loader { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: #000; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; z-index: 9999; 
+        }
 
-        /* Header */
+        /* Container de Login */
+        #auth-screen { height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .logo-login { color: var(--red); font-size: 3rem; font-weight: bold; margin-bottom: 20px; }
+
+        /* Estilo App */
         header { background: #000; padding: 15px 4%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
-        
-        /* App Layout */
         .content { padding: 20px 4%; }
-        .row-cards { display: flex; overflow-x: auto; gap: 15px; padding: 10px 0; scrollbar-width: none; }
-        .card { min-width: 160px; height: 240px; background-size: cover; border-radius: 4px; cursor: pointer; transition: 0.3s; }
-        .card:hover { transform: scale(1.05); }
+        
+        /* Admin Box */
+        .adm-card { border: 2px solid var(--gold); background: #111; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        .user-line { background: #222; padding: 15px; margin: 8px 0; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+        .badge-adm { background: var(--gold); color: black; }
+        .badge-user { background: #007bff; color: white; }
 
-        /* Admin Style */
-        .adm-section { background: #111; border: 1px solid gold; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
-        .user-row { background: #222; padding: 10px; margin: 5px 0; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
-        .badge { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
-        .badge-master { background: gold; color: #000; }
-        .badge-client { background: #007bff; color: #fff; }
+        .row-cards { display: flex; overflow-x: auto; gap: 10px; padding: 15px 0; }
+        .card { min-width: 150px; height: 220px; background-size: cover; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div id="loader"><h1>Carregando Master Flix...</h1></div>
+    <div id="loader">
+        <h1 style="color:var(--red)">MASTER FLIX</h1>
+        <p>Iniciando sistema seguro...</p>
+    </div>
 
     <div id="auth-screen" class="hidden">
-        <div id="auth-container">
-            <div class="welcome-text">MASTER FLIX</div>
+        <div style="text-align:center">
+            <div class="logo-login">MASTER FLIX</div>
             <div id="firebaseui-auth-container"></div>
         </div>
     </div>
@@ -54,22 +60,22 @@
     <div id="app-screen" class="hidden">
         <header>
             <div style="color:var(--red); font-size: 1.5rem; font-weight: bold;">MASTER FLIX</div>
-            <div id="nav-actions">
-                <button onclick="logout()" style="background:none; color:white; border:1px solid #555; padding:5px 15px; cursor:pointer;">Sair</button>
-            </div>
+            <button onclick="sair()" style="background:none; color:gray; border:1px solid #333; cursor:pointer; padding:5px 15px;">Sair</button>
         </header>
 
         <div class="content">
-            <div id="master-panel"></div>
+            <div id="painel-master" class="hidden adm-card">
+                <h2 style="color:var(--gold)">GERENCIAMENTO MASTER</h2>
+                <div id="lista-usuarios">Buscando base de dados...</div>
+            </div>
 
-            <h2 id="user-welcome"></h2>
-            <p>Filmes</p><div id="row-movies" class="row-cards"></div>
-            <p>Séries</p><div id="row-series" class="row-cards"></div>
+            <h2>Filmes e Séries</h2>
+            <div id="catalogo-geral" class="row-cards"></div>
         </div>
     </div>
 
 <script>
-    // Inicialização
+    // Inicialização do Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyCzxrJMumx3lbjsOXv9JHdXrn29jUg3x_0",
         authDomain: "outflix-9e57d.firebaseapp.com",
@@ -77,26 +83,52 @@
         databaseURL: "https://outflix-9e57d-default-rtdb.asia-southeast1.firebasedatabase.app"
     };
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.database(), auth = firebase.auth();
-    const ui = new firebaseui.auth.AuthUI(auth);
+    const db = firebase.database();
+    const auth = firebase.auth();
 
-    // Configuração do Plugin de Login
+    // Configuração do Plugin UI
+    const ui = new firebaseui.auth.AuthUI(auth);
     const uiConfig = {
-        callbacks: {
-            signInSuccessWithAuthResult: function(authResult) {
-                checkUserData(authResult.user);
-                return false; // Não redirecionar automaticamente
-            }
-        },
         signInOptions: [firebase.auth.EmailAuthProvider.PROVIDER_ID],
-        signInFlow: 'popup'
+        signInFlow: 'popup',
+        callbacks: { signInSuccessWithAuthResult: () => false }
     };
 
-    // --- MONITOR DE ESTADO (A CHAVE PARA MATAR O BUG) ---
-    auth.onAuthStateChanged(user => {
+    // --- LÓGICA DE CARREGAMENTO (ANTI-TRAVAMENTO) ---
+    
+    // 1. Timeout de emergência: se não carregar em 6s, mostra o login
+    const safetyTimeout = setTimeout(() => {
+        if (!document.getElementById('loader').classList.contains('hidden')) {
+            console.log("Timeout atingido, forçando tela de login.");
+            document.getElementById('loader').classList.add('hidden');
+            document.getElementById('auth-screen').classList.remove('hidden');
+            ui.start('#firebaseui-auth-container', uiConfig);
+        }
+    }, 6000);
+
+    // 2. Monitor de Usuário Real-time
+    auth.onAuthStateChanged(async (user) => {
+        clearTimeout(safetyTimeout); // Cancela o timeout se o Firebase responder
+        
         if (user) {
-            checkUserData(user);
+            try {
+                const snap = await db.ref('users/' + user.uid).once('value');
+                let uData = snap.val();
+
+                // Se logou mas não tem registro no banco, cria como 'user'
+                if (!uData) {
+                    const exp = new Date(); exp.setDate(exp.getDate() + 7);
+                    uData = { email: user.email, role: 'user', valido_ate: exp.toISOString(), phone: 'Não cadastrado' };
+                    await db.ref('users/' + user.uid).set(uData);
+                }
+
+                iniciarApp(uData, user.uid);
+            } catch (error) {
+                console.error("Erro ao ler banco:", error);
+                alert("Erro de conexão com o banco de dados.");
+            }
         } else {
+            // Não logado
             document.getElementById('loader').classList.add('hidden');
             document.getElementById('app-screen').classList.add('hidden');
             document.getElementById('auth-screen').classList.remove('hidden');
@@ -104,82 +136,58 @@
         }
     });
 
-    async function checkUserData(user) {
-        const snap = await db.ref('users/' + user.uid).once('value');
-        let data = snap.val();
-
-        // Se o usuário é novo (não tem no banco), cria o perfil básico
-        if (!data) {
-            const exp = new Date(); exp.setDate(exp.getDate() + 7);
-            data = { email: user.email, role: 'user', valido_ate: exp.toISOString(), phone: 'Não informado' };
-            await db.ref('users/' + user.uid).set(data);
-        }
-
-        // Validação de Hierarquia e Acesso
-        if (new Date() > new Date(data.valido_ate) && data.role !== 'admin') {
-            alert("Acesso expirado!"); logout(); return;
-        }
-
-        // Se chegou aqui, ele é válido. Mostra o App.
-        showApp(data, user.uid);
-    }
-
-    function showApp(userData, uid) {
+    function iniciarApp(uData, uid) {
+        document.getElementById('loader').classList.add('hidden');
         document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('app-screen').classList.remove('hidden');
-        document.getElementById('loader').classList.add('hidden');
-        document.getElementById('user-welcome').innerText = `Olá, ${userData.email}`;
 
-        if (userData.role === 'admin') {
-            renderMasterPanel();
+        // Se for Master, libera o painel e a lista
+        if (uData.role === 'admin') {
+            document.getElementById('painel-master').classList.remove('hidden');
+            carregarUsuariosMaster();
         }
-        renderCatalogo();
+
+        carregarFilmes();
     }
 
-    function renderMasterPanel() {
-        const container = document.getElementById('master-panel');
-        container.innerHTML = `
-            <div class="adm-section">
-                <h2 style="color:gold">PAINEL MASTER</h2>
-                <div id="users-list-area">Carregando usuários...</div>
-            </div>
-        `;
-        
+    function carregarUsuariosMaster() {
         db.ref('users').on('value', snap => {
-            const area = document.getElementById('users-list-area');
-            area.innerHTML = "";
-            snap.forEach(u => {
-                const val = u.val();
-                const isMaster = val.role === 'admin';
-                area.innerHTML += `
-                    <div class="user-row">
+            const list = document.getElementById('lista-usuarios');
+            list.innerHTML = "";
+            snap.forEach(child => {
+                const u = child.val();
+                const isAdmin = u.role === 'admin';
+                list.innerHTML += `
+                    <div class="user-line">
                         <div>
-                            <span class="badge ${isMaster ? 'badge-master' : 'badge-client'}">${val.role}</span>
-                            <b>${val.email}</b>
+                            <span class="badge ${isAdmin ? 'badge-adm' : 'badge-user'}">${u.role}</span>
+                            <b>${u.email}</b>
                         </div>
-                        <a href="https://wa.me/${val.phone}" target="_blank" style="color:#25d366; text-decoration:none;">WhatsApp</a>
+                        <a href="https://wa.me/55${u.phone}" target="_blank" style="color:#25d366; text-decoration:none; font-weight:bold;">ZAP</a>
                     </div>
                 `;
             });
         });
     }
 
-    function renderCatalogo() {
+    function carregarFilmes() {
         db.ref('catalog').on('value', snap => {
-            const rM = document.getElementById('row-movies'), rS = document.getElementById('row-series');
-            rM.innerHTML = ""; rS.innerHTML = "";
+            const container = document.getElementById('catalogo-geral');
+            container.innerHTML = "";
             snap.forEach(i => {
                 const m = i.val();
                 const card = document.createElement('div');
-                card.className = 'card'; card.style.backgroundImage = `url(${m.img})`;
+                card.className = 'card';
+                card.style.backgroundImage = `url(${m.img})`;
                 card.onclick = () => window.open(m.video, '_blank');
-                if(m.type === 'movie') rM.appendChild(card); else rS.appendChild(card);
+                container.appendChild(card);
             });
         });
     }
 
-    function logout() { auth.signOut().then(() => location.reload()); }
-
+    function sair() {
+        auth.signOut().then(() => location.reload());
+    }
 </script>
 </body>
 </html>
