@@ -10,49 +10,59 @@
 
     <style>
         :root { --red: #e50914; --black: #141414; --gray: #181818; }
-        body { background: var(--black); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow-x: hidden; }
+        body { background: var(--black); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow-x: hidden; transition: 0.5s; }
         .hidden { display: none !important; }
-        
+        .lights-off { background: #000 !important; }
+        .lights-off header, .lights-off .content { opacity: 0; pointer-events: none; }
+
         /* HEADER */
         header { background: rgba(0,0,0,0.95); padding: 15px 4%; display: flex; justify-content: space-between; align-items: center; position: fixed; width: 100%; top: 0; z-index: 1000; box-sizing: border-box; border-bottom: 1px solid #333; }
         .logo { color: var(--red); font-size: 26px; font-weight: bold; cursor: pointer; }
 
-        /* MENU E OVERLAY */
-        #sidebar { position: fixed; left: -260px; top: 0; width: 240px; height: 100%; background: #000; display: flex; flex-direction: column; padding-top: 90px; z-index: 4000; transition: 0.4s; border-right: 1px solid var(--red); }
-        #sidebar.open { left: 0; }
-        .side-item { color: #808080; margin: 10px 0; cursor: pointer; display: flex; align-items: center; padding: 15px 25px; transition: 0.3s; }
-        .side-item:hover { color: white; border-left: 5px solid var(--red); }
-        #sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 3500; display: none; }
+        /* OVERLAYS */
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 3500; display: none; }
+        .modal-wrap { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 5000; display: none; align-items: center; justify-content: center; }
 
         /* LOGIN */
-        #login-screen { height: 100vh; display: flex; align-items: center; justify-content: center; background: #000; }
-        .login-box { background: rgba(0,0,0,0.9); padding: 40px; border-radius: 10px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #333; }
-        input, select { width: 100%; padding: 14px; margin: 10px 0; background: #333; border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; }
+        .login-box { background: rgba(0,0,0,0.9); padding: 40px; border-radius: 10px; width: 90%; max-width: 450px; text-align: center; border: 1px solid #333; margin: 100px auto; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; background: #333; border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; }
         .btn-red { background: var(--red); color: white; border: none; padding: 14px; width: 100%; font-weight: bold; cursor: pointer; border-radius: 4px; }
 
         /* CATALOGO */
         .content { padding: 110px 4% 40px; }
         .row-cards { display: flex; overflow-x: auto; gap: 12px; padding: 10px 0; scrollbar-width: none; }
-        .card { min-width: 170px; height: 250px; background-size: cover; background-position: center; border-radius: 6px; cursor: pointer; transition: 0.4s; }
+        .card { min-width: 170px; height: 250px; background-size: cover; border-radius: 6px; cursor: pointer; transition: 0.4s; }
         .card:hover { transform: scale(1.1); border: 2px solid white; }
 
         /* MODAL DETALHES */
-        #details-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 5000; display: none; align-items: center; justify-content: center; }
         .details-container { background: #181818; width: 90%; max-width: 900px; display: flex; flex-wrap: wrap; border-radius: 12px; overflow: hidden; position: relative; }
         .details-video { flex: 1.5; min-width: 300px; background: #000; height: 350px; }
         .details-info { flex: 1; min-width: 300px; padding: 30px; }
-        
-        /* ADM AREA */
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .stat-box { background: #333; padding: 15px; border-radius: 8px; text-align: center; border-bottom: 3px solid var(--red); }
-        .adm-list-item { background: #222; padding: 10px; margin: 5px 0; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
-        .btn-del { background: #555; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
-        .btn-del:hover { background: var(--red); }
+
+        /* PLAYER */
+        #full-player { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 6000; display: none; }
+        .player-controls { position: absolute; top: 20px; right: 20px; z-index: 6100; display: flex; gap: 15px; }
+
+        /* ADM */
+        .adm-list-item { background: #222; padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 4px solid var(--red); line-height: 1.6; }
+        .wa-btn { background: #25d366; color: white; text-decoration: none; padding: 5px 12px; border-radius: 4px; display: inline-flex; align-items: center; gap: 5px; font-weight: bold; font-size: 13px; margin-top: 5px; }
     </style>
 </head>
 <body>
 
-<div id="sidebar-overlay" onclick="toggleMenu()"></div>
+<div id="sidebar-overlay" class="overlay" onclick="toggleMenu()"></div>
+
+<div id="details-overlay" class="modal-wrap" onclick="fecharDetalhes()">
+    <div class="details-container" onclick="event.stopPropagation()">
+        <div class="details-video" id="preview-area"></div>
+        <div class="details-info">
+            <h1 id="det-title" style="margin:0; color:var(--red);"></h1>
+            <p id="det-meta" style="color:gray;"></p>
+            <p id="det-sinopse" style="font-size:14px; line-height:1.5; height:120px; overflow-y:auto;"></p>
+            <button class="btn-red" onclick="abrirPlayerFull()">ASSISTIR AGORA</button>
+        </div>
+    </div>
+</div>
 
 <div id="login-screen">
     <div class="login-box">
@@ -61,7 +71,7 @@
             <input type="email" id="email" placeholder="E-mail">
             <input type="password" id="pass" placeholder="Senha">
             <button class="btn-red" onclick="handleLogin()">ENTRAR</button>
-            <p onclick="toggleAuth('reg')" style="color:gray; cursor:pointer; margin-top:20px;">Criar nova conta</p>
+            <p onclick="toggleAuth('reg')" style="color:gray; cursor:pointer; margin-top:20px;">Novo por aqui? <span style="color:white;">Cadastre-se</span></p>
         </div>
     </div>
 </div>
@@ -72,38 +82,22 @@
             <span onclick="toggleMenu()" style="font-size:28px; cursor:pointer; margin-right:20px;">☰</span>
             <div class="logo">MASTER FLIX</div>
         </div>
-        <div style="display:flex; align-items:center;">
-            <button id="btn-master" class="hidden" onclick="abrirAdm()" style="background:var(--red); border:none; color:white; padding:8px 15px; border-radius:4px; cursor:pointer; font-weight:bold;">ADM</button>
-            <button onclick="auth.signOut()" style="margin-left:15px; background:none; border:1px solid gray; color:gray; cursor:pointer; padding:7px;">SAIR</button>
+        <div>
+            <button id="btn-master" class="hidden" onclick="abrirAdm()" style="background:var(--red); border:none; color:white; padding:8px 15px; border-radius:4px; font-weight:bold; cursor:pointer;">ADM</button>
+            <button onclick="auth.signOut()" style="margin-left:15px; background:none; border:1px solid gray; color:gray; cursor:pointer; padding:7px 15px;">SAIR</button>
         </div>
     </header>
 
-    <div id="sidebar">
-        <div class="side-item" onclick="renderCatalogo('all'); toggleMenu()">🏠 Início</div>
-        <div class="side-item" onclick="renderCatalogo('movie'); toggleMenu()">🎬 Filmes</div>
-        <div class="side-item" onclick="renderCatalogo('tv'); toggleMenu()">📺 Séries</div>
-        <div style="flex-grow:1"></div>
-        <div class="side-item" onclick="abrirSuporte()">📞 Suporte Master</div>
-    </div>
-
     <div class="content">
-        <div id="admin-view" class="hidden" style="background:#111; padding:25px; border-radius:10px; border:1px solid var(--red); margin-bottom:30px;">
-            <div class="stats-grid">
-                <div class="stat-box"><small>USUÁRIOS</small><div id="stat-users">0</div></div>
-                <div class="stat-box"><small>CONTEÚDO</small><div id="stat-media">0</div></div>
-            </div>
+        <div id="admin-view" class="hidden" style="background:#111; padding:20px; border-radius:10px; border:1px solid var(--red); margin-bottom:30px;">
+            <h3>USUÁRIOS CADASTRADOS (CRM)</h3>
+            <div id="admin-users-list"></div>
             
-            <h3>ADICIONAR NOVO</h3>
+            <h3 style="margin-top:40px;">POSTAR FILME/SÉRIE</h3>
             <input type="text" id="adm-id" placeholder="ID TMDB">
             <select id="adm-type"><option value="movie">Filme</option><option value="tv">Série</option></select>
             <input type="text" id="adm-url" placeholder="Link .mp4">
-            <button class="btn-red" onclick="addMedia()">POSTAR AGORA</button>
-
-            <h3 style="margin-top:30px;">GERENCIAR FILMES/SÉRIES</h3>
-            <div id="admin-media-list" style="max-height: 200px; overflow-y: auto; background:#000; padding:10px;"></div>
-
-            <h3 style="margin-top:30px;">GERENCIAR USUÁRIOS</h3>
-            <div id="admin-users-list"></div>
+            <button class="btn-red" onclick="addMedia()">PUBLICAR</button>
         </div>
 
         <p class="row-title">Filmes</p><div id="row-movies" class="row-cards"></div>
@@ -111,25 +105,16 @@
     </div>
 </div>
 
-<div id="details-modal">
-    <div class="details-container">
-        <span onclick="fecharDetalhes()" style="position:absolute; top:15px; right:20px; font-size:30px; cursor:pointer; z-index:10;">✕</span>
-        <div class="details-video" id="preview-area"></div>
-        <div class="details-info">
-            <h1 id="det-title" style="margin:0; color:var(--red);"></h1>
-            <p id="det-meta" style="color:gray;"></p>
-            <p id="det-sinopse" style="font-size:14px; line-height:1.5; max-height:150px; overflow-y:auto;"></p>
-            <button class="btn-red" onclick="abrirPlayerFull()">PLAY</button>
-        </div>
+<div id="full-player">
+    <div class="player-controls">
+        <button onclick="document.body.classList.toggle('lights-off')" style="cursor:pointer; background:rgba(255,255,255,0.2); border:none; color:white; padding:10px; border-radius:50%;">💡</button>
+        <button onclick="fecharPlayerFull()" style="cursor:pointer; background:rgba(255,255,255,0.2); border:none; color:white; padding:10px; border-radius:50%;">✕</button>
     </div>
-</div>
-
-<div id="full-player" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:9000;">
-    <span onclick="fecharPlayerFull()" style="position:absolute; top:20px; right:30px; font-size:40px; cursor:pointer; z-index:9100;">✕</span>
     <div id="full-video-container" style="width:100%; height:100%;"></div>
 </div>
 
 <script>
+    // CONFIGURAÇÃO FIREBASE
     const firebaseConfig = {
         apiKey: "AIzaSyCzxrJMumx3lbjsOXv9JHdXrn29jUg3x_0",
         authDomain: "outflix-9e57d.firebaseapp.com",
@@ -140,30 +125,38 @@
     const db = firebase.database(), auth = firebase.auth();
     let midiaAtual = null;
 
-    // --- SEGURANÇA E LOGIN ---
+    // --- LOGIN E CADASTRO ---
     async function handleLogin() {
         const e = document.getElementById('email').value.trim();
         const p = document.getElementById('pass').value.trim();
-        if(!e || !p) return alert("Por favor, preencha todos os campos!");
-        try { await auth.signInWithEmailAndPassword(e, p); } catch(err) { alert("Acesso Inválido!"); }
+        if(!e || !p) return alert("Preencha tudo!");
+        try { await auth.signInWithEmailAndPassword(e, p); } catch(err) { alert("Erro de acesso!"); }
     }
 
     function toggleAuth(mode) {
         const container = document.getElementById('auth-container');
         if(mode === 'reg') {
-            container.innerHTML = `<input type="email" id="new-email" placeholder="Seu E-mail"><input type="password" id="new-pass" placeholder="Senha"><button class="btn-red" onclick="executarCadastro()">CRIAR CONTA (+7 DIAS)</button><p onclick="toggleAuth('log')" style="color:gray; cursor:pointer; margin-top:20px;">Já tenho conta</p>`;
+            container.innerHTML = `
+                <input type="email" id="new-email" placeholder="E-mail">
+                <input type="password" id="new-pass" placeholder="Senha">
+                <input type="text" id="new-phone" placeholder="WhatsApp (Ex: 11999999999)">
+                <input type="text" id="new-addr" placeholder="Endereço">
+                <button class="btn-red" onclick="executarCadastro()">CADASTRAR</button>
+                <p onclick="toggleAuth('log')" style="color:gray; cursor:pointer; margin-top:20px;">Já tenho conta</p>
+            `;
         } else {
-            container.innerHTML = `<input type="email" id="email" placeholder="E-mail"><input type="password" id="pass" placeholder="Senha"><button class="btn-red" onclick="handleLogin()">ENTRAR</button><p onclick="toggleAuth('reg')" style="color:gray; cursor:pointer; margin-top:20px;">Criar nova conta</p>`;
+            container.innerHTML = `<input type="email" id="email" placeholder="E-mail"><input type="password" id="pass" placeholder="Senha"><button class="btn-red" onclick="handleLogin()">ENTRAR</button><p onclick="toggleAuth('reg')" style="color:gray; cursor:pointer; margin-top:20px;">Cadastrar</p>`;
         }
     }
 
     async function executarCadastro() {
         const e = document.getElementById('new-email').value, p = document.getElementById('new-pass').value;
-        if(p.length < 6) return alert("A senha deve ter pelo menos 6 dígitos.");
+        const tel = document.getElementById('new-phone').value, end = document.getElementById('new-addr').value;
+        if(!tel || !end) return alert("Preencha telefone e endereço!");
         try {
             const res = await auth.createUserWithEmailAndPassword(e, p);
             const exp = new Date(); exp.setDate(exp.getDate() + 7);
-            await db.ref('users/' + res.user.uid).set({ email: e, role: 'user', valido_ate: exp.toISOString() });
+            await db.ref('users/' + res.user.uid).set({ email: e, phone: tel, address: end, role: 'user', valido_ate: exp.toISOString() });
             location.reload();
         } catch(err) { alert(err.message); }
     }
@@ -173,98 +166,85 @@
             db.ref('users/' + user.uid).once('value').then(snap => {
                 const u = snap.val();
                 if(!u) return auth.signOut();
-                if(new Date() > new Date(u.valido_ate) && u.role !== 'admin') {
-                    alert("Seu acesso expirou. Contacte o Master.");
-                    auth.signOut();
-                } else {
-                    document.getElementById('login-screen').classList.add('hidden');
-                    document.getElementById('app-screen').classList.remove('hidden');
-                    if(u.role === 'admin') document.getElementById('btn-master').classList.remove('hidden');
-                    renderCatalogo();
-                }
+                if(new Date() > new Date(u.valido_ate) && u.role !== 'admin') { alert("Vencido!"); auth.signOut(); }
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('app-screen').classList.remove('hidden');
+                if(u.role === 'admin') document.getElementById('btn-master').classList.remove('hidden');
+                renderCatalogo();
             });
-        } else {
-            document.getElementById('login-screen').classList.remove('hidden');
-            document.getElementById('app-screen').classList.add('hidden');
         }
     });
 
-    // --- CATALOGO ---
-    function renderCatalogo() {
-        db.ref('catalog').on('value', snap => {
-            const rM = document.getElementById('row-movies'), rS = document.getElementById('row-series');
-            rM.innerHTML = ""; rS.innerHTML = "";
-            let count = 0;
-            snap.forEach(item => {
-                const m = item.val(); count++;
-                const card = document.createElement('div');
-                card.className = 'card'; card.style.backgroundImage = `url(${m.img})`;
-                card.onclick = () => abrirDetalhes(m);
-                if(m.type === 'movie') rM.appendChild(card); else rS.appendChild(card);
-            });
-            document.getElementById('stat-media').innerText = count;
-        });
-    }
-
+    // --- FUNÇÕES DE INTERAÇÃO ---
+    function fecharDetalhes() { document.getElementById('details-overlay').style.display = 'none'; document.getElementById('preview-area').innerHTML = ""; }
+    
     function abrirDetalhes(m) {
         midiaAtual = m;
         document.getElementById('det-title').innerText = m.title;
-        document.getElementById('det-sinopse').innerText = m.sinopse || "Sem sinopse disponível.";
+        document.getElementById('det-sinopse').innerText = m.sinopse;
         document.getElementById('det-meta').innerText = `${m.ano} • ${m.type === 'movie' ? 'Filme' : 'Série'}`;
         document.getElementById('preview-area').innerHTML = `<video autoplay muted loop style="width:100%; height:100%; object-fit:cover;"><source src="${m.video}" type="video/mp4"></video>`;
-        document.getElementById('details-modal').style.display = 'flex';
+        document.getElementById('details-overlay').style.display = 'flex';
     }
 
-    function fecharDetalhes() { document.getElementById('details-modal').style.display = 'none'; document.getElementById('preview-area').innerHTML = ""; }
     function abrirPlayerFull() {
         fecharDetalhes();
         document.getElementById('full-video-container').innerHTML = `<video controls autoplay style="width:100%; height:100%;"><source src="${midiaAtual.video}" type="video/mp4"></video>`;
-        document.getElementById('full-player').classList.remove('hidden');
+        document.getElementById('full-player').style.display = 'block';
     }
-    function fecharPlayerFull() { document.getElementById('full-player').classList.add('hidden'); document.getElementById('full-video-container').innerHTML = ""; }
 
-    // --- ADM FUNCIONALIDADES ---
+    function fecharPlayerFull() {
+        document.getElementById('full-player').style.display = 'none';
+        document.getElementById('full-video-container').innerHTML = "";
+        document.body.classList.remove('lights-off');
+    }
+
     function abrirAdm() {
         document.getElementById('admin-view').classList.toggle('hidden');
-        // Lista Usuários
         db.ref('users').on('value', snap => {
             const list = document.getElementById('admin-users-list');
-            list.innerHTML = ""; let uCount = 0;
-            snap.forEach(u => {
-                const user = u.val(); uCount++;
-                list.innerHTML += `<div class="adm-list-item"><span>${user.email}</span><button onclick="liberar('${u.key}')">LIBERAR +30D</button></div>`;
-            });
-            document.getElementById('stat-users').innerText = uCount;
-        });
-        // Lista Mídias para Deletar
-        db.ref('catalog').on('value', snap => {
-            const list = document.getElementById('admin-media-list');
             list.innerHTML = "";
-            snap.forEach(m => {
-                list.innerHTML += `<div class="adm-list-item"><span>${m.val().title}</span><button class="btn-del" onclick="removerMidia('${m.key}')">EXCLUIR</button></div>`;
+            snap.forEach(u => {
+                const user = u.val();
+                // O ATALHO PARA WHATSAPP ESTÁ AQUI:
+                list.innerHTML += `
+                    <div class="adm-list-item">
+                        <b>Cliente:</b> ${user.email}<br>
+                        <b>Endereço:</b> ${user.address}<br>
+                        <a href="https://wa.me/55${user.phone}" target="_blank" class="wa-btn">
+                            🟢 CHAMAR NO WHATSAPP (${user.phone})
+                        </a>
+                        <button onclick="liberar('${u.key}')" style="margin-left:10px; cursor:pointer;">+30 DIAS</button>
+                    </div>`;
             });
         });
+    }
+
+    function liberar(uid) {
+        const n = new Date(); n.setDate(n.getDate() + 30);
+        db.ref('users/' + uid).update({ valido_ate: n.toISOString() });
+        alert("Renovado!");
     }
 
     async function addMedia() {
         const id = document.getElementById('adm-id').value, type = document.getElementById('adm-type').value, url = document.getElementById('adm-url').value;
         const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=2eaf2fd731f81a77741ecb625b588a40&language=pt-BR`);
         const d = await res.json();
-        await db.ref('catalog').push({ 
-            title: d.title || d.name, 
-            img: `https://image.tmdb.org/t/p/w500${d.poster_path}`, 
-            video: url, type: type, 
-            sinopse: d.overview, 
-            ano: (d.release_date || d.first_air_date || "2024").split("-")[0] 
-        });
-        alert("Conteúdo Adicionado!");
+        await db.ref('catalog').push({ title: d.title || d.name, img: `https://image.tmdb.org/t/p/w500${d.poster_path}`, video: url, type: type, sinopse: d.overview, ano: (d.release_date || d.first_air_date || "2024").split("-")[0] });
+        alert("Postado!");
     }
 
-    function removerMidia(key) { if(confirm("Deseja apagar este conteúdo?")) db.ref('catalog/' + key).remove(); }
-    function liberar(uid) {
-        const nova = new Date(); nova.setDate(nova.getDate() + 30);
-        db.ref('users/' + uid).update({ valido_ate: nova.toISOString() });
-        alert("Acesso Renovado!");
+    function renderCatalogo() {
+        db.ref('catalog').on('value', snap => {
+            const rM = document.getElementById('row-movies'), rS = document.getElementById('row-series');
+            rM.innerHTML = ""; rS.innerHTML = "";
+            snap.forEach(i => {
+                const m = i.val();
+                const c = document.createElement('div'); c.className = 'card'; c.style.backgroundImage = `url(${m.img})`;
+                c.onclick = () => abrirDetalhes(m);
+                if(m.type === 'movie') rM.appendChild(c); else rS.appendChild(c);
+            });
+        });
     }
 
     function toggleMenu() {
