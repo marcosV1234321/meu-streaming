@@ -3,99 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MASTER FLIX CONTROL</title>
+    <title>MASTER FLIX PRO</title>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
 
     <style>
-        :root { --red: #e50914; --black: #141414; --gray: #181818; }
-        body { background: var(--black); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; }
+        :root { --red: #e50914; --black: #141414; --gold: #ffc107; }
+        body { background: var(--black); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow-x: hidden; }
         .hidden { display: none !important; }
         
-        /* TELA DE CARREGAMENTO */
-        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        /* HEADER */
+        header { background: #000; padding: 15px 4%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000; }
+        .logo { color: var(--red); font-size: 24px; font-weight: bold; }
 
         /* LOGIN */
         #login-screen { height: 100vh; display: flex; align-items: center; justify-content: center; background: #000; }
-        .login-box { background: rgba(0,0,0,0.9); padding: 40px; border-radius: 10px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #333; }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; background: #333; border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; }
+        .login-box { background: #111; padding: 40px; border-radius: 10px; width: 90%; max-width: 400px; border: 1px solid #333; text-align: center; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; background: #333; border: 1px solid #444; color: white; border-radius: 4px; }
         .btn-red { background: var(--red); color: white; border: none; padding: 14px; width: 100%; font-weight: bold; cursor: pointer; border-radius: 4px; }
 
-        /* HEADER */
-        header { background: #000; padding: 15px 4%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 100; }
-        .logo { color: var(--red); font-size: 24px; font-weight: bold; }
-
         /* CATALOGO */
-        #app-screen { height: 100vh; overflow-y: auto; }
         .content { padding: 20px 4%; }
-        .row-cards { display: flex; overflow-x: auto; gap: 15px; padding: 15px 0; }
-        .card { min-width: 160px; height: 240px; background-size: cover; border-radius: 8px; cursor: pointer; transition: 0.3s; }
-        .card:hover { transform: scale(1.05); border: 2px solid white; }
+        .row-cards { display: flex; overflow-x: auto; gap: 15px; padding: 15px 0; scrollbar-width: none; }
+        .card { min-width: 160px; height: 240px; background-size: cover; border-radius: 8px; cursor: pointer; transition: 0.3s; border: 2px solid transparent; }
+        .card:hover { transform: scale(1.05); border-color: white; }
 
         /* MODAIS */
-        .modal-wrap { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; display: none; align-items: center; justify-content: center; }
-        .details-container { background: #181818; width: 95%; max-width: 900px; display: flex; flex-wrap: wrap; border-radius: 12px; overflow: hidden; position: relative; }
-        .details-video { flex: 1.5; min-width: 300px; background: #000; height: 350px; }
-        .details-info { flex: 1; min-width: 300px; padding: 25px; }
+        .modal-wrap { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 5000; display: none; align-items: center; justify-content: center; }
+        .details-container { background: #181818; width: 90%; max-width: 800px; border-radius: 12px; overflow: hidden; position: relative; display: flex; flex-wrap: wrap; }
+        .details-video { flex: 1.2; min-width: 300px; background: #000; height: 300px; }
+        .details-info { flex: 1; padding: 25px; }
 
-        /* ADM */
-        .adm-item { background: #222; padding: 15px; margin-bottom: 10px; border-radius: 8px; border-left: 5px solid #444; }
-        .badge { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; display: inline-block; }
-        .badge-admin { background: gold; color: black; }
+        /* PAINEL ADM */
+        .adm-box { background: #111; border: 2px solid var(--gold); padding: 20px; border-radius: 10px; margin-bottom: 30px; }
+        .user-card { background: #222; padding: 15px; margin: 10px 0; border-radius: 6px; position: relative; }
+        .badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; display: inline-block; }
+        .badge-admin { background: var(--gold); color: black; }
         .badge-user { background: #007bff; color: white; }
-        .wa-link { color: #25d366; text-decoration: none; font-weight: bold; display: block; margin: 10px 0; }
-
-        /* LIGHTS OFF */
-        .lights-off { background: #000 !important; }
-        .lights-off header, .lights-off .content { opacity: 0; pointer-events: none; }
+        .wa-link { color: #25d366; text-decoration: none; font-weight: bold; display: block; margin: 8px 0; }
     </style>
 </head>
 <body>
 
-<div id="loader"><h2>MASTER FLIX...</h2></div>
-
-<div id="login-screen" class="hidden">
+<div id="login-screen">
     <div class="login-box">
-        <h1 style="color:var(--red)">LOGIN</h1>
-        <input type="email" id="email" placeholder="E-mail">
-        <input type="password" id="pass" placeholder="Senha">
-        <button class="btn-red" onclick="handleLogin()">ENTRAR</button>
-        <p onclick="toggleAuth('reg')" style="color:gray; cursor:pointer; margin-top:20px;">Criar Conta</p>
-    </div>
-</div>
-
-<div id="register-screen" class="hidden">
-    <div class="login-box">
-        <h1 style="color:var(--red)">CADASTRO</h1>
-        <input type="email" id="new-email" placeholder="E-mail">
-        <input type="password" id="new-pass" placeholder="Senha">
-        <input type="text" id="new-phone" placeholder="WhatsApp (DDD + Número)">
-        <input type="text" id="new-addr" placeholder="Endereço">
-        <button class="btn-red" onclick="executarCadastro()">CADASTRAR MASTER</button>
-        <p onclick="toggleAuth('log')" style="color:gray; cursor:pointer; margin-top:20px;">Já tenho conta</p>
+        <h1 style="color:var(--red)">MASTER FLIX</h1>
+        <div id="auth-fields">
+            <input type="email" id="email" placeholder="E-mail">
+            <input type="password" id="pass" placeholder="Senha">
+            <button class="btn-red" onclick="handleLogin()">ENTRAR</button>
+            <p onclick="showRegister()" style="color:gray; cursor:pointer; margin-top:15px;">Novo? Criar conta</p>
+        </div>
+        <div id="reg-fields" class="hidden">
+            <input type="email" id="n-email" placeholder="E-mail">
+            <input type="password" id="n-pass" placeholder="Senha">
+            <input type="text" id="n-phone" placeholder="WhatsApp (DDD + Número)">
+            <input type="text" id="n-addr" placeholder="Endereço">
+            <button class="btn-red" onclick="handleRegister()">CADASTRAR</button>
+            <p onclick="showLogin()" style="color:gray; cursor:pointer; margin-top:15px;">Já tenho conta</p>
+        </div>
     </div>
 </div>
 
 <div id="app-screen" class="hidden">
     <header>
         <div class="logo">MASTER FLIX</div>
-        <div>
-            <button id="btn-master" class="hidden" onclick="toggleAdm()" style="background:gold; border:none; padding:8px 15px; border-radius:4px; font-weight:bold; cursor:pointer;">PAINEL MASTER</button>
-            <button onclick="auth.signOut()" style="background:none; color:white; border:1px solid #444; padding:8px; margin-left:10px; cursor:pointer;">SAIR</button>
+        <div id="header-btns">
+            <button id="logout-btn" onclick="auth.signOut()" style="background:none; color:white; border:1px solid #444; padding:7px 15px; cursor:pointer;">SAIR</button>
         </div>
     </header>
 
     <div class="content">
-        <div id="admin-view" class="hidden" style="background:#111; padding:20px; border-radius:10px; margin-bottom:30px; border:1px solid gold;">
-            <h3>USUÁRIOS E HIERARQUIA</h3>
-            <div id="admin-users-list"></div>
-            <hr>
-            <h3>ADICIONAR FILME</h3>
-            <input type="text" id="adm-id" placeholder="ID TMDB">
-            <select id="adm-type"><option value="movie">Filme</option><option value="tv">Série</option></select>
-            <input type="text" id="adm-url" placeholder="URL MP4">
-            <button class="btn-red" onclick="addMedia()">POSTAR</button>
+        <div id="admin-panel" class="hidden adm-box">
+            <h2 style="color:var(--gold)">PAINEL MASTER</h2>
+            <h3>FILMES E SÉRIES</h3>
+            <input type="text" id="m-id" placeholder="ID TMDB">
+            <select id="m-type"><option value="movie">Filme</option><option value="tv">Série</option></select>
+            <input type="text" id="m-url" placeholder="URL MP4">
+            <button class="btn-red" onclick="addMidia()">POSTAR</button>
+            
+            <h3 style="margin-top:30px;">GERENCIAR USUÁRIOS</h3>
+            <div id="users-list"></div>
         </div>
 
         <p>Filmes</p><div id="row-movies" class="row-cards"></div>
@@ -103,23 +92,15 @@
     </div>
 </div>
 
-<div id="details-overlay" class="modal-wrap" onclick="fecharDetalhes()">
+<div id="det-modal" class="modal-wrap" onclick="closeDet()">
     <div class="details-container" onclick="event.stopPropagation()">
-        <div class="details-video" id="preview-area"></div>
+        <div class="details-video" id="vid-preview"></div>
         <div class="details-info">
-            <h1 id="det-title"></h1>
-            <p id="det-sinopse" style="font-size:14px; color:#ccc;"></p>
-            <button class="btn-red" onclick="abrirPlayer()">ASSISTIR</button>
+            <h2 id="det-title" style="margin-top:0"></h2>
+            <p id="det-text" style="color:#aaa; font-size:14px;"></p>
+            <button class="btn-red" onclick="openPlayer()">ASSISTIR AGORA</button>
         </div>
     </div>
-</div>
-
-<div id="full-player" class="modal-wrap" style="background:#000;">
-    <div style="position:absolute; top:20px; right:20px; z-index:3000;">
-        <button onclick="document.body.classList.toggle('lights-off')" style="padding:10px; cursor:pointer;">💡</button>
-        <button onclick="fecharPlayer()" style="padding:10px; cursor:pointer;">✕</button>
-    </div>
-    <div id="player-cont" style="width:100%; height:100%;"></div>
 </div>
 
 <script>
@@ -131,66 +112,70 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database(), auth = firebase.auth();
-    let midiaAtual = null;
+    let midiaAtiva = null;
 
-    // --- SEGURANÇA DE AUTENTICAÇÃO ---
+    // --- SEGURANÇA DE ACESSO ---
     auth.onAuthStateChanged(async (user) => {
-        const loader = document.getElementById('loader');
-        const app = document.getElementById('app-screen');
-        const login = document.getElementById('login-screen');
-
         if (user) {
             const snap = await db.ref('users/' + user.uid).once('value');
-            const userData = snap.val();
+            const u = snap.val();
+            
+            if (!u) { auth.signOut(); return; }
 
-            if (userData) {
-                // Usuário válido e com dados no banco
-                login.classList.add('hidden');
-                document.getElementById('register-screen').classList.add('hidden');
-                app.classList.remove('hidden');
-                if (userData.role === 'admin') document.getElementById('btn-master').classList.remove('hidden');
-                renderCatalogo();
-                loader.classList.add('hidden');
-            } else {
-                // Bug de auth vazia prevenido aqui
-                await auth.signOut();
-                location.reload();
+            // Verificação de Validade
+            if (new Date() > new Date(u.valido_ate) && u.role !== 'admin') {
+                alert("Sua conta expirou!"); auth.signOut(); return;
             }
+
+            // ENTRADA NO APP
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app-screen').classList.remove('hidden');
+
+            // LIBERAÇÃO DE ADM (APENAS SE FOR ADMIN)
+            if (u.role === 'admin') {
+                const btn = document.createElement('button');
+                btn.id = "adm-toggle-btn";
+                btn.innerHTML = "PAINEL ADM";
+                btn.style = "background:var(--gold); color:black; border:none; padding:7px 15px; font-weight:bold; cursor:pointer; margin-right:10px;";
+                btn.onclick = () => {
+                    const p = document.getElementById('admin-panel');
+                    p.classList.toggle('hidden');
+                    if(!p.classList.contains('hidden')) loadUsers();
+                };
+                document.getElementById('header-btns').prepend(btn);
+            }
+            render();
         } else {
-            app.classList.add('hidden');
-            login.classList.remove('hidden');
-            loader.classList.add('hidden');
+            document.getElementById('app-screen').classList.add('hidden');
+            document.getElementById('login-screen').classList.remove('hidden');
+            const b = document.getElementById('adm-toggle-btn'); if(b) b.remove();
         }
     });
 
+    // --- LOGIN / REGISTRO ---
+    function showRegister() { document.getElementById('auth-fields').classList.add('hidden'); document.getElementById('reg-fields').classList.remove('hidden'); }
+    function showLogin() { document.getElementById('auth-fields').classList.remove('hidden'); document.getElementById('reg-fields').classList.add('hidden'); }
+
     async function handleLogin() {
-        const e = document.getElementById('email').value.trim();
-        const p = document.getElementById('pass').value.trim();
-        if (!e || !p) return alert("Digite e-mail e senha!");
-        try { await auth.signInWithEmailAndPassword(e, p); } catch(err) { alert("Usuário ou senha inválidos!"); }
+        const e = document.getElementById('email').value.trim(), p = document.getElementById('pass').value.trim();
+        if(!e || !p) return alert("Campos vazios!");
+        try { await auth.signInWithEmailAndPassword(e, p); } catch(err) { alert("Erro: " + err.message); }
     }
 
-    async function executarCadastro() {
-        const e = document.getElementById('new-email').value, p = document.getElementById('new-pass').value;
-        const tel = document.getElementById('new-phone').value, end = document.getElementById('new-addr').value;
-        if (!e || !p || !tel) return alert("Preencha os campos obrigatórios!");
+    async function handleRegister() {
+        const e = document.getElementById('n-email').value, p = document.getElementById('n-pass').value;
+        const t = document.getElementById('n-phone').value, a = document.getElementById('n-addr').value;
+        if(!e || !p || !t) return alert("Preencha os campos!");
         try {
             const res = await auth.createUserWithEmailAndPassword(e, p);
             const exp = new Date(); exp.setDate(exp.getDate() + 7);
-            await db.ref('users/' + res.user.uid).set({
-                email: e, phone: tel, address: end, role: 'user', valido_ate: exp.toISOString()
-            });
+            await db.ref('users/' + res.user.uid).set({ email:e, phone:t, address:a, role:'user', valido_ate: exp.toISOString() });
             location.reload();
         } catch(err) { alert(err.message); }
     }
 
-    function toggleAuth(mode) {
-        document.getElementById('login-screen').classList.toggle('hidden', mode === 'reg');
-        document.getElementById('register-screen').classList.toggle('hidden', mode === 'log');
-    }
-
-    // --- CATALOGO E MODAIS ---
-    function renderCatalogo() {
+    // --- CATALOGO ---
+    function render() {
         db.ref('catalog').on('value', snap => {
             const rM = document.getElementById('row-movies'), rS = document.getElementById('row-series');
             rM.innerHTML = ""; rS.innerHTML = "";
@@ -199,54 +184,42 @@
                 const card = document.createElement('div');
                 card.className = 'card'; card.style.backgroundImage = `url(${m.img})`;
                 card.onclick = () => {
-                    midiaAtual = m;
+                    midiaAtiva = m;
                     document.getElementById('det-title').innerText = m.title;
-                    document.getElementById('det-sinopse').innerText = m.sinopse;
-                    document.getElementById('preview-area').innerHTML = `<video autoplay muted loop style="width:100%;height:100%;object-fit:cover;"><source src="${m.video}"></video>`;
-                    document.getElementById('details-overlay').style.display = 'flex';
+                    document.getElementById('det-text').innerText = m.sinopse;
+                    document.getElementById('vid-preview').innerHTML = `<video autoplay muted loop style="width:100%;height:100%;object-fit:cover;"><source src="${m.video}"></video>`;
+                    document.getElementById('det-modal').style.display = 'flex';
                 };
                 if(m.type === 'movie') rM.appendChild(card); else rS.appendChild(card);
             });
         });
     }
 
-    function fecharDetalhes() { document.getElementById('details-overlay').style.display = 'none'; }
-    function abrirPlayer() {
-        document.getElementById('player-cont').innerHTML = `<video controls autoplay style="width:100%;height:100%;"><source src="${midiaAtual.video}"></video>`;
-        document.getElementById('full-player').style.display = 'flex';
-    }
-    function fecharPlayer() { 
-        document.getElementById('full-player').style.display = 'none'; 
-        document.getElementById('player-cont').innerHTML = "";
-        document.body.classList.remove('lights-off');
-    }
+    function closeDet() { document.getElementById('det-modal').style.display = 'none'; document.getElementById('vid-preview').innerHTML = ""; }
+    function openPlayer() { window.open(midiaAtiva.video, '_blank'); } // Abre em nova aba para evitar bugs de player
 
-    // --- ADM FUNCIONALIDADE ---
-    function toggleAdm() {
-        const view = document.getElementById('admin-view');
-        view.classList.toggle('hidden');
-        if(!view.classList.contains('hidden')) {
-            db.ref('users').on('value', snap => {
-                const list = document.getElementById('admin-users-list');
-                list.innerHTML = "";
-                snap.forEach(u => {
-                    const user = u.val();
-                    const isAdm = user.role === 'admin';
-                    list.innerHTML += `
-                        <div class="adm-item" style="border-left-color: ${isAdm ? 'gold' : '#007bff'}">
-                            <span class="badge ${isAdm ? 'badge-admin' : 'badge-user'}">${user.role}</span><br>
-                            <b>Email:</b> ${user.email}<br>
-                            <a href="https://wa.me/55${user.phone}" target="_blank" class="wa-link">🟢 WhatsApp: ${user.phone}</a>
-                            <small>Vence: ${new Date(user.valido_ate).toLocaleDateString()}</small><br>
-                            <button onclick="db.ref('users/${u.key}').update({role:'admin'})" style="font-size:9px;">Promover Master</button>
-                        </div>`;
-                });
+    // --- ADM LOGIC ---
+    function loadUsers() {
+        db.ref('users').on('value', snap => {
+            const list = document.getElementById('users-list');
+            list.innerHTML = "";
+            snap.forEach(u => {
+                const user = u.val();
+                const isAdmin = user.role === 'admin';
+                list.innerHTML += `
+                    <div class="user-card">
+                        <span class="badge ${isAdmin ? 'badge-admin' : 'badge-user'}">${user.role}</span><br>
+                        <b>${user.email}</b><br>
+                        <a href="https://wa.me/55${user.phone}" target="_blank" class="wa-link">🟢 WhatsApp: ${user.phone}</a>
+                        <small>Endereço: ${user.address}</small><br>
+                        <button onclick="db.ref('users/${u.key}').update({role:'admin'})" style="font-size:10px; margin-top:5px;">Virar Master</button>
+                    </div>`;
             });
-        }
+        });
     }
 
-    async function addMedia() {
-        const id = document.getElementById('adm-id').value, type = document.getElementById('adm-type').value, url = document.getElementById('adm-url').value;
+    async function addMidia() {
+        const id = document.getElementById('m-id').value, type = document.getElementById('m-type').value, url = document.getElementById('m-url').value;
         const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=2eaf2fd731f81a77741ecb625b588a40&language=pt-BR`);
         const d = await res.json();
         await db.ref('catalog').push({ title: d.title || d.name, img: `https://image.tmdb.org/t/p/w500${d.poster_path}`, video: url, type: type, sinopse: d.overview, ano: (d.release_date || d.first_air_date || "2025").split("-")[0] });
