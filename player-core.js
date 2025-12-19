@@ -1,122 +1,98 @@
 const PlayerCore = {
     currentMedia: null,
+    contactInfo: { zap: "5511999999999", email: "" },
 
     init() {
         this.injectStyles();
         this.renderInterface();
         this.renderCatalog();
         this.renderAdminStats();
-        this.loadContactInfo(); // Carrega os dados de contato do banco
+        this.loadContactInfo();
     },
 
-    // 1. ESTILOS ATUALIZADOS (MENU COM SUPORTE E CONTATO)
+    // 1. ESTILOS PARA MENU OCULTO E BUSCADOR INTELIGENTE
     injectStyles() {
         const style = document.createElement('style');
         style.innerHTML = `
-            #sidebar { position: fixed; left: 0; top: 0; width: 60px; height: 100%; background: #000; display: flex; flex-direction: column; align-items: center; padding: 80px 0 20px 0; z-index: 900; transition: 0.3s; border-right: 1px solid #333; }
-            #sidebar:hover { width: 180px; }
-            .side-item { color: gray; margin: 15px 0; cursor: pointer; display: flex; align-items: center; width: 100%; padding-left: 20px; }
-            .side-item:hover { color: white; }
-            .side-text { display: none; margin-left: 15px; font-size: 14px; }
-            #sidebar:hover .side-text { display: block; }
-            .side-spacer { flex-grow: 1; } /* Empurra o suporte para baixo */
-
-            #info-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 800px; background: #181818; z-index: 1500; display: none; border-radius: 8px; overflow: hidden; box-shadow: 0 0 50px #000; }
-            .info-content { display: flex; flex-wrap: wrap; }
-            .info-img { width: 300px; height: 450px; background-size: cover; }
-            .info-text { flex: 1; padding: 30px; min-width: 300px; }
+            /* Menu Lateral Escondido por Padrão */
+            #sidebar { position: fixed; left: -250px; top: 0; width: 200px; height: 100%; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; padding-top: 80px; z-index: 3000; transition: 0.4s; border-right: 1px solid var(--red); }
+            #sidebar.open { left: 0; }
             
-            #search-bar { width: 200px; padding: 8px; background: #222; border: 1px solid #444; color: white; border-radius: 20px; margin-right: 15px; outline: none; }
-            .admin-section { background: #222; padding: 15px; border-radius: 8px; margin-top: 15px; border: 1px solid #444; }
+            .side-item { color: gray; margin: 15px 0; cursor: pointer; display: flex; align-items: center; padding-left: 20px; font-size: 16px; }
+            .side-item:hover { color: white; }
+            .side-spacer { flex-grow: 1; }
+
+            /* Botão das 4 Barrinhas (Menu Hamburguer) */
+            .menu-toggle { font-size: 28px; color: white; cursor: pointer; margin-right: 20px; transition: 0.3s; }
+            .menu-toggle:hover { color: var(--red); }
+
+            /* Buscador que aparece ao passar o mouse */
+            .search-container { display: flex; align-items: center; position: relative; margin-right: 20px; height: 40px; }
+            #search-bar { width: 0; padding: 0; opacity: 0; background: #222; border: 1px solid #444; color: white; border-radius: 20px; outline: none; transition: 0.5s; }
+            .search-container:hover #search-bar { width: 200px; padding: 8px 15px; opacity: 1; }
+            .search-icon { font-size: 20px; cursor: pointer; }
+
+            /* Overlay para fechar menu ao clicar fora */
+            #sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 2900; }
         `;
         document.head.appendChild(style);
     },
 
-    // 2. INTERFACE COM MENU LATERAL E SUPORTE
+    // 2. INTERFACE COM MENU DE BARRINHAS E BUSCA HOVER
     renderInterface() {
+        // Injetar Botão de Menu e Buscador no Header
+        const header = document.querySelector('header');
+        const headerLeft = header.querySelector('div:first-child');
+        const headerRight = header.querySelector('div:last-child');
+
+        // Botão de Barrinhas
+        const menuBtn = document.createElement('span');
+        menuBtn.className = 'menu-toggle';
+        menuBtn.innerHTML = '☰'; // Você pode usar 4 barras se preferir, mas ☰ é o padrão
+        menuBtn.onclick = () => this.toggleMenu();
+        headerLeft.prepend(menuBtn);
+
+        // Container de Busca (Aparece no hover)
+        const searchCont = document.createElement('div');
+        searchCont.className = 'search-container';
+        searchCont.innerHTML = `
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-bar" placeholder="O que vamos assistir?">
+        `;
+        headerRight.prepend(searchCont);
+        document.getElementById('search-bar').oninput = (e) => this.search(e.target.value);
+
+        // Menu Lateral
         const sidebar = document.createElement('div');
         sidebar.id = 'sidebar';
         sidebar.innerHTML = `
-            <div class="side-item" onclick="PlayerCore.filter('all')">🏠 <span class="side-text">Início</span></div>
-            <div class="side-item" onclick="PlayerCore.filter('kids')">🧒 <span class="side-text">Infantil</span></div>
-            <div class="side-item" onclick="PlayerCore.filter('movie')">🎬 <span class="side-text">Filmes</span></div>
-            <div class="side-item" onclick="PlayerCore.filter('tv')">📺 <span class="side-text">Séries</span></div>
+            <div class="side-item" onclick="PlayerCore.filter('all')">🏠 Início</div>
+            <div class="side-item" onclick="PlayerCore.filter('kids')">🧒 Infantil</div>
+            <div class="side-item" onclick="PlayerCore.filter('movie')">🎬 Filmes</div>
+            <div class="side-item" onclick="PlayerCore.filter('tv')">📺 Séries</div>
             <div class="side-spacer"></div>
-            <div class="side-item" onclick="PlayerCore.openContact()">📞 <span class="side-text">Suporte</span></div>
+            <div class="side-item" onclick="PlayerCore.openContact()">📞 Suporte</div>
         `;
         document.body.appendChild(sidebar);
 
-        // Barra de Busca
-        const headerRight = document.querySelector('header div:last-child');
-        const searchInput = document.createElement('input');
-        searchInput.id = 'search-bar';
-        searchInput.placeholder = '🔍 Buscar...';
-        searchInput.oninput = (e) => this.search(e.target.value);
-        headerRight.prepend(searchInput);
-
-        // Modal de Info (Sinopse)
-        const infoModal = document.createElement('div');
-        infoModal.id = 'info-modal';
-        infoModal.innerHTML = `
-            <div class="info-content">
-                <div id="info-poster" class="info-img"></div>
-                <div class="info-text">
-                    <h1 id="info-title"></h1>
-                    <p id="info-synopsis" style="color: #ccc;"></p>
-                    <button class="btn-red" style="width: 200px;" onclick="PlayerCore.playNow()">▶ ASSISTIR</button>
-                    <button class="btn-red" style="width: 50px; background: #444; margin-left: 10px;" onclick="PlayerCore.closeInfo()">✕</button>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(infoModal);
+        // Overlay
+        const overlay = document.createElement('div');
+        overlay.id = 'sidebar-overlay';
+        overlay.onclick = () => this.toggleMenu();
+        document.body.appendChild(overlay);
     },
 
-    // 3. CARREGA DADOS DE CONTATO DO FIREBASE
-    loadContactInfo() {
-        db.ref('settings/contact').on('value', snap => {
-            const data = snap.val();
-            this.contactInfo = data || { email: "suporte@masterflix.com", zap: "5511999999999" };
-        });
+    toggleMenu() {
+        const sb = document.getElementById('sidebar');
+        const ov = document.getElementById('sidebar-overlay');
+        sb.classList.toggle('open');
+        ov.style.display = sb.classList.contains('open') ? 'block' : 'none';
     },
 
-    openContact() {
-        const msg = `Olá! Sou usuário do Master Flix e preciso de ajuda.`;
-        const url = `https://wa.me/${this.contactInfo.zap}?text=${encodeURIComponent(msg)}`;
-        window.open(url, '_blank');
-    },
+    // --- LOGICA DE CATALOGO E BUSCA ---
+    search(q) { this.renderCatalog('all', q); },
+    filter(f) { this.toggleMenu(); this.renderCatalog(f); },
 
-    // 4. ÁREA ADM PARA ALTERAR CONTATO
-    renderAdminStats() {
-        const adminView = document.getElementById('admin-view');
-        if (!adminView) return;
-
-        let contactSection = document.getElementById('admin-contact-config');
-        if (!contactSection) {
-            contactSection = document.createElement('div');
-            contactSection.id = 'admin-contact-config';
-            contactSection.className = 'admin-section';
-            contactSection.innerHTML = `
-                <h4>⚙️ CONFIGURAÇÕES DE CONTATO</h4>
-                <input type="text" id="cfg-zap" placeholder="WhatsApp (Somente números: 55...)">
-                <input type="email" id="cfg-email" placeholder="E-mail de Suporte">
-                <button class="btn-red" onclick="PlayerCore.saveSettings()">SALVAR CONTATOS</button>
-                <div id="media-list-adm" style="margin-top:20px;"></div>
-            `;
-            adminView.appendChild(contactSection);
-        }
-    },
-
-    saveSettings() {
-        const zap = document.getElementById('cfg-zap').value;
-        const email = document.getElementById('cfg-email').value;
-        if(!zap || !email) return alert("Preencha os campos de contato!");
-        
-        db.ref('settings/contact').set({ zap, email })
-            .then(() => alert("Configurações salvas com sucesso!"))
-            .catch(e => alert("Erro ao salvar: " + e.message));
-    },
-
-    // --- FUNÇÕES DE CATÁLOGO E PLAYER ---
     renderCatalog(filter = 'all', query = '') {
         const rows = { movie: document.getElementById('row-movies'), tv: document.getElementById('row-series') };
         db.ref('catalog').on('value', snap => {
@@ -135,12 +111,14 @@ const PlayerCore = {
         });
     },
 
-    async openInfo(media, key) {
+    // --- RESTANTE DAS FUNÇÕES (INFO, PLAYER, ADMIN) ---
+    openInfo(media, key) {
         this.currentMedia = { ...media, key };
+        const modal = document.getElementById('info-modal');
         document.getElementById('info-poster').style.backgroundImage = `url(${media.img})`;
         document.getElementById('info-title').innerText = media.title;
         document.getElementById('info-synopsis').innerText = media.overview || "Sem sinopse disponível.";
-        document.getElementById('info-modal').style.display = 'block';
+        modal.style.display = 'block';
     },
 
     closeInfo() { document.getElementById('info-modal').style.display = 'none'; },
@@ -153,12 +131,40 @@ const PlayerCore = {
     openAdvancedPlayer(media) {
         const playerModal = document.getElementById('player-modal');
         const container = document.getElementById('video-container');
-        container.innerHTML = `<video id="main-video" controls autoplay style="width:100%; height:100%;"><source src="${media.video}" type="video/mp4"></video>`;
+        container.innerHTML = `<video controls autoplay style="width:100%; height:100%;"><source src="${media.video}" type="video/mp4"></video>`;
         playerModal.style.display = 'block';
     },
 
-    search(q) { this.renderCatalog('all', q); },
-    filter(f) { this.renderCatalog(f); }
+    loadContactInfo() {
+        db.ref('settings/contact').on('value', snap => { if(snap.val()) this.contactInfo = snap.val(); });
+    },
+
+    openContact() {
+        window.open(`https://wa.me/${this.contactInfo.zap}`, '_blank');
+    },
+
+    renderAdminStats() {
+        const adminView = document.getElementById('admin-view');
+        if (!adminView) return;
+        let stats = document.getElementById('admin-contact-config');
+        if (!stats) {
+            stats = document.createElement('div');
+            stats.id = 'admin-contact-config';
+            stats.innerHTML = `
+                <div style="background:#222; padding:15px; border-radius:8px; border:1px solid #444; margin-top:15px;">
+                    <h4>⚙️ CONFIGURAÇÃO DE CONTATO</h4>
+                    <input type="text" id="cfg-zap" placeholder="WhatsApp (55...)">
+                    <button class="btn-red" onclick="PlayerCore.saveSettings()">SALVAR</button>
+                    <div id="media-list-adm" style="margin-top:20px;"></div>
+                </div>`;
+            adminView.appendChild(stats);
+        }
+    },
+
+    saveSettings() {
+        const zap = document.getElementById('cfg-zap').value;
+        db.ref('settings/contact').set({ zap }).then(() => alert("Salvo!"));
+    }
 };
 
 // Funções Globais
@@ -166,24 +172,14 @@ async function addMedia() {
     const id = document.getElementById('adm-id').value;
     const type = document.getElementById('adm-type').value;
     const url = document.getElementById('adm-url').value;
-    const isKids = confirm("Este conteúdo é para crianças?");
+    const isKids = confirm("É conteúdo infantil?");
     const TMDB_KEY = "2eaf2fd731f81a77741ecb625b588a40";
-
     try {
         const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${TMDB_KEY}&language=pt-BR`);
         const d = await res.json();
-        await db.ref('catalog').push({
-            title: d.title || d.name,
-            img: `https://image.tmdb.org/t/p/w500${d.poster_path}`,
-            video: url,
-            tmdbId: id,
-            type: type,
-            isKids: isKids,
-            overview: d.overview,
-            views: 0
-        });
-        alert("Mídia publicada!");
-    } catch(e) { alert("Erro ao publicar!"); }
+        await db.ref('catalog').push({ title: d.title || d.name, img: `https://image.tmdb.org/t/p/w500${d.poster_path}`, video: url, tmdbId: id, type, isKids, overview: d.overview, views: 0 });
+        alert("Publicado!");
+    } catch(e) { alert("Erro!"); }
 }
 
 function closePlayer() { document.getElementById('player-modal').style.display = 'none'; document.getElementById('video-container').innerHTML = ""; }
