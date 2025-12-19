@@ -3,118 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MASTER FLIX ULTIMATE</title>
+    <title>MASTER FLIX CONTROL</title>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
 
     <style>
         :root { --red: #e50914; --black: #141414; --gray: #181818; }
-        body { background: var(--black); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow-x: hidden; transition: 0.5s; }
+        body { background: var(--black); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; }
         .hidden { display: none !important; }
-        .lights-off { background: #000 !important; }
-        .lights-off header, .lights-off .content { opacity: 0; pointer-events: none; }
-
-        /* HEADER */
-        header { background: rgba(0,0,0,0.95); padding: 15px 4%; display: flex; justify-content: space-between; align-items: center; position: fixed; width: 100%; top: 0; z-index: 1000; box-sizing: border-box; border-bottom: 1px solid #333; }
-        .logo { color: var(--red); font-size: 26px; font-weight: bold; cursor: pointer; }
-
-        /* OVERLAYS */
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 3500; display: none; }
-        .modal-wrap { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 5000; display: none; align-items: center; justify-content: center; }
+        
+        /* TELA DE CARREGAMENTO */
+        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; align-items: center; justify-content: center; z-index: 9999; }
 
         /* LOGIN */
-        .login-box { background: rgba(0,0,0,0.9); padding: 40px; border-radius: 10px; width: 90%; max-width: 450px; text-align: center; border: 1px solid #333; margin: 100px auto; }
+        #login-screen { height: 100vh; display: flex; align-items: center; justify-content: center; background: #000; }
+        .login-box { background: rgba(0,0,0,0.9); padding: 40px; border-radius: 10px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #333; }
         input, select { width: 100%; padding: 12px; margin: 8px 0; background: #333; border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; }
         .btn-red { background: var(--red); color: white; border: none; padding: 14px; width: 100%; font-weight: bold; cursor: pointer; border-radius: 4px; }
 
+        /* HEADER */
+        header { background: #000; padding: 15px 4%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 100; }
+        .logo { color: var(--red); font-size: 24px; font-weight: bold; }
+
         /* CATALOGO */
-        .content { padding: 110px 4% 40px; }
-        .row-cards { display: flex; overflow-x: auto; gap: 12px; padding: 10px 0; scrollbar-width: none; }
-        .card { min-width: 170px; height: 250px; background-size: cover; border-radius: 6px; cursor: pointer; transition: 0.4s; }
-        .card:hover { transform: scale(1.1); border: 2px solid white; }
+        #app-screen { height: 100vh; overflow-y: auto; }
+        .content { padding: 20px 4%; }
+        .row-cards { display: flex; overflow-x: auto; gap: 15px; padding: 15px 0; }
+        .card { min-width: 160px; height: 240px; background-size: cover; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+        .card:hover { transform: scale(1.05); border: 2px solid white; }
 
-        /* MODAL DETALHES */
-        .details-container { background: #181818; width: 90%; max-width: 900px; display: flex; flex-wrap: wrap; border-radius: 12px; overflow: hidden; position: relative; }
+        /* MODAIS */
+        .modal-wrap { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; display: none; align-items: center; justify-content: center; }
+        .details-container { background: #181818; width: 95%; max-width: 900px; display: flex; flex-wrap: wrap; border-radius: 12px; overflow: hidden; position: relative; }
         .details-video { flex: 1.5; min-width: 300px; background: #000; height: 350px; }
-        .details-info { flex: 1; min-width: 300px; padding: 30px; }
-
-        /* PLAYER */
-        #full-player { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 6000; display: none; }
-        .player-controls { position: absolute; top: 20px; right: 20px; z-index: 6100; display: flex; gap: 15px; }
+        .details-info { flex: 1; min-width: 300px; padding: 25px; }
 
         /* ADM */
-        .adm-list-item { background: #222; padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 4px solid var(--red); line-height: 1.6; }
-        .wa-btn { background: #25d366; color: white; text-decoration: none; padding: 5px 12px; border-radius: 4px; display: inline-flex; align-items: center; gap: 5px; font-weight: bold; font-size: 13px; margin-top: 5px; }
+        .adm-item { background: #222; padding: 15px; margin-bottom: 10px; border-radius: 8px; border-left: 5px solid #444; }
+        .badge { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; display: inline-block; }
+        .badge-admin { background: gold; color: black; }
+        .badge-user { background: #007bff; color: white; }
+        .wa-link { color: #25d366; text-decoration: none; font-weight: bold; display: block; margin: 10px 0; }
+
+        /* LIGHTS OFF */
+        .lights-off { background: #000 !important; }
+        .lights-off header, .lights-off .content { opacity: 0; pointer-events: none; }
     </style>
 </head>
 <body>
 
-<div id="sidebar-overlay" class="overlay" onclick="toggleMenu()"></div>
+<div id="loader"><h2>MASTER FLIX...</h2></div>
 
-<div id="details-overlay" class="modal-wrap" onclick="fecharDetalhes()">
-    <div class="details-container" onclick="event.stopPropagation()">
-        <div class="details-video" id="preview-area"></div>
-        <div class="details-info">
-            <h1 id="det-title" style="margin:0; color:var(--red);"></h1>
-            <p id="det-meta" style="color:gray;"></p>
-            <p id="det-sinopse" style="font-size:14px; line-height:1.5; height:120px; overflow-y:auto;"></p>
-            <button class="btn-red" onclick="abrirPlayerFull()">ASSISTIR AGORA</button>
-        </div>
+<div id="login-screen" class="hidden">
+    <div class="login-box">
+        <h1 style="color:var(--red)">LOGIN</h1>
+        <input type="email" id="email" placeholder="E-mail">
+        <input type="password" id="pass" placeholder="Senha">
+        <button class="btn-red" onclick="handleLogin()">ENTRAR</button>
+        <p onclick="toggleAuth('reg')" style="color:gray; cursor:pointer; margin-top:20px;">Criar Conta</p>
     </div>
 </div>
 
-<div id="login-screen">
+<div id="register-screen" class="hidden">
     <div class="login-box">
-        <h1 style="color:var(--red);">MASTER FLIX</h1>
-        <div id="auth-container">
-            <input type="email" id="email" placeholder="E-mail">
-            <input type="password" id="pass" placeholder="Senha">
-            <button class="btn-red" onclick="handleLogin()">ENTRAR</button>
-            <p onclick="toggleAuth('reg')" style="color:gray; cursor:pointer; margin-top:20px;">Novo por aqui? <span style="color:white;">Cadastre-se</span></p>
-        </div>
+        <h1 style="color:var(--red)">CADASTRO</h1>
+        <input type="email" id="new-email" placeholder="E-mail">
+        <input type="password" id="new-pass" placeholder="Senha">
+        <input type="text" id="new-phone" placeholder="WhatsApp (DDD + Número)">
+        <input type="text" id="new-addr" placeholder="Endereço">
+        <button class="btn-red" onclick="executarCadastro()">CADASTRAR MASTER</button>
+        <p onclick="toggleAuth('log')" style="color:gray; cursor:pointer; margin-top:20px;">Já tenho conta</p>
     </div>
 </div>
 
 <div id="app-screen" class="hidden">
     <header>
-        <div style="display:flex; align-items:center;">
-            <span onclick="toggleMenu()" style="font-size:28px; cursor:pointer; margin-right:20px;">☰</span>
-            <div class="logo">MASTER FLIX</div>
-        </div>
+        <div class="logo">MASTER FLIX</div>
         <div>
-            <button id="btn-master" class="hidden" onclick="abrirAdm()" style="background:var(--red); border:none; color:white; padding:8px 15px; border-radius:4px; font-weight:bold; cursor:pointer;">ADM</button>
-            <button onclick="auth.signOut()" style="margin-left:15px; background:none; border:1px solid gray; color:gray; cursor:pointer; padding:7px 15px;">SAIR</button>
+            <button id="btn-master" class="hidden" onclick="toggleAdm()" style="background:gold; border:none; padding:8px 15px; border-radius:4px; font-weight:bold; cursor:pointer;">PAINEL MASTER</button>
+            <button onclick="auth.signOut()" style="background:none; color:white; border:1px solid #444; padding:8px; margin-left:10px; cursor:pointer;">SAIR</button>
         </div>
     </header>
 
     <div class="content">
-        <div id="admin-view" class="hidden" style="background:#111; padding:20px; border-radius:10px; border:1px solid var(--red); margin-bottom:30px;">
-            <h3>USUÁRIOS CADASTRADOS (CRM)</h3>
+        <div id="admin-view" class="hidden" style="background:#111; padding:20px; border-radius:10px; margin-bottom:30px; border:1px solid gold;">
+            <h3>USUÁRIOS E HIERARQUIA</h3>
             <div id="admin-users-list"></div>
-            
-            <h3 style="margin-top:40px;">POSTAR FILME/SÉRIE</h3>
+            <hr>
+            <h3>ADICIONAR FILME</h3>
             <input type="text" id="adm-id" placeholder="ID TMDB">
             <select id="adm-type"><option value="movie">Filme</option><option value="tv">Série</option></select>
-            <input type="text" id="adm-url" placeholder="Link .mp4">
-            <button class="btn-red" onclick="addMedia()">PUBLICAR</button>
+            <input type="text" id="adm-url" placeholder="URL MP4">
+            <button class="btn-red" onclick="addMedia()">POSTAR</button>
         </div>
 
-        <p class="row-title">Filmes</p><div id="row-movies" class="row-cards"></div>
-        <p class="row-title">Séries</p><div id="row-series" class="row-cards"></div>
+        <p>Filmes</p><div id="row-movies" class="row-cards"></div>
+        <p>Séries</p><div id="row-series" class="row-cards"></div>
     </div>
 </div>
 
-<div id="full-player">
-    <div class="player-controls">
-        <button onclick="document.body.classList.toggle('lights-off')" style="cursor:pointer; background:rgba(255,255,255,0.2); border:none; color:white; padding:10px; border-radius:50%;">💡</button>
-        <button onclick="fecharPlayerFull()" style="cursor:pointer; background:rgba(255,255,255,0.2); border:none; color:white; padding:10px; border-radius:50%;">✕</button>
+<div id="details-overlay" class="modal-wrap" onclick="fecharDetalhes()">
+    <div class="details-container" onclick="event.stopPropagation()">
+        <div class="details-video" id="preview-area"></div>
+        <div class="details-info">
+            <h1 id="det-title"></h1>
+            <p id="det-sinopse" style="font-size:14px; color:#ccc;"></p>
+            <button class="btn-red" onclick="abrirPlayer()">ASSISTIR</button>
+        </div>
     </div>
-    <div id="full-video-container" style="width:100%; height:100%;"></div>
+</div>
+
+<div id="full-player" class="modal-wrap" style="background:#000;">
+    <div style="position:absolute; top:20px; right:20px; z-index:3000;">
+        <button onclick="document.body.classList.toggle('lights-off')" style="padding:10px; cursor:pointer;">💡</button>
+        <button onclick="fecharPlayer()" style="padding:10px; cursor:pointer;">✕</button>
+    </div>
+    <div id="player-cont" style="width:100%; height:100%;"></div>
 </div>
 
 <script>
-    // CONFIGURAÇÃO FIREBASE
     const firebaseConfig = {
         apiKey: "AIzaSyCzxrJMumx3lbjsOXv9JHdXrn29jUg3x_0",
         authDomain: "outflix-9e57d.firebaseapp.com",
@@ -125,131 +133,124 @@
     const db = firebase.database(), auth = firebase.auth();
     let midiaAtual = null;
 
-    // --- LOGIN E CADASTRO ---
+    // --- SEGURANÇA DE AUTENTICAÇÃO ---
+    auth.onAuthStateChanged(async (user) => {
+        const loader = document.getElementById('loader');
+        const app = document.getElementById('app-screen');
+        const login = document.getElementById('login-screen');
+
+        if (user) {
+            const snap = await db.ref('users/' + user.uid).once('value');
+            const userData = snap.val();
+
+            if (userData) {
+                // Usuário válido e com dados no banco
+                login.classList.add('hidden');
+                document.getElementById('register-screen').classList.add('hidden');
+                app.classList.remove('hidden');
+                if (userData.role === 'admin') document.getElementById('btn-master').classList.remove('hidden');
+                renderCatalogo();
+                loader.classList.add('hidden');
+            } else {
+                // Bug de auth vazia prevenido aqui
+                await auth.signOut();
+                location.reload();
+            }
+        } else {
+            app.classList.add('hidden');
+            login.classList.remove('hidden');
+            loader.classList.add('hidden');
+        }
+    });
+
     async function handleLogin() {
         const e = document.getElementById('email').value.trim();
         const p = document.getElementById('pass').value.trim();
-        if(!e || !p) return alert("Preencha tudo!");
-        try { await auth.signInWithEmailAndPassword(e, p); } catch(err) { alert("Erro de acesso!"); }
-    }
-
-    function toggleAuth(mode) {
-        const container = document.getElementById('auth-container');
-        if(mode === 'reg') {
-            container.innerHTML = `
-                <input type="email" id="new-email" placeholder="E-mail">
-                <input type="password" id="new-pass" placeholder="Senha">
-                <input type="text" id="new-phone" placeholder="WhatsApp (Ex: 11999999999)">
-                <input type="text" id="new-addr" placeholder="Endereço">
-                <button class="btn-red" onclick="executarCadastro()">CADASTRAR</button>
-                <p onclick="toggleAuth('log')" style="color:gray; cursor:pointer; margin-top:20px;">Já tenho conta</p>
-            `;
-        } else {
-            container.innerHTML = `<input type="email" id="email" placeholder="E-mail"><input type="password" id="pass" placeholder="Senha"><button class="btn-red" onclick="handleLogin()">ENTRAR</button><p onclick="toggleAuth('reg')" style="color:gray; cursor:pointer; margin-top:20px;">Cadastrar</p>`;
-        }
+        if (!e || !p) return alert("Digite e-mail e senha!");
+        try { await auth.signInWithEmailAndPassword(e, p); } catch(err) { alert("Usuário ou senha inválidos!"); }
     }
 
     async function executarCadastro() {
         const e = document.getElementById('new-email').value, p = document.getElementById('new-pass').value;
         const tel = document.getElementById('new-phone').value, end = document.getElementById('new-addr').value;
-        if(!tel || !end) return alert("Preencha telefone e endereço!");
+        if (!e || !p || !tel) return alert("Preencha os campos obrigatórios!");
         try {
             const res = await auth.createUserWithEmailAndPassword(e, p);
             const exp = new Date(); exp.setDate(exp.getDate() + 7);
-            await db.ref('users/' + res.user.uid).set({ email: e, phone: tel, address: end, role: 'user', valido_ate: exp.toISOString() });
+            await db.ref('users/' + res.user.uid).set({
+                email: e, phone: tel, address: end, role: 'user', valido_ate: exp.toISOString()
+            });
             location.reload();
         } catch(err) { alert(err.message); }
     }
 
-    auth.onAuthStateChanged(user => {
-        if(user) {
-            db.ref('users/' + user.uid).once('value').then(snap => {
-                const u = snap.val();
-                if(!u) return auth.signOut();
-                if(new Date() > new Date(u.valido_ate) && u.role !== 'admin') { alert("Vencido!"); auth.signOut(); }
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('app-screen').classList.remove('hidden');
-                if(u.role === 'admin') document.getElementById('btn-master').classList.remove('hidden');
-                renderCatalogo();
-            });
-        }
-    });
-
-    // --- FUNÇÕES DE INTERAÇÃO ---
-    function fecharDetalhes() { document.getElementById('details-overlay').style.display = 'none'; document.getElementById('preview-area').innerHTML = ""; }
-    
-    function abrirDetalhes(m) {
-        midiaAtual = m;
-        document.getElementById('det-title').innerText = m.title;
-        document.getElementById('det-sinopse').innerText = m.sinopse;
-        document.getElementById('det-meta').innerText = `${m.ano} • ${m.type === 'movie' ? 'Filme' : 'Série'}`;
-        document.getElementById('preview-area').innerHTML = `<video autoplay muted loop style="width:100%; height:100%; object-fit:cover;"><source src="${m.video}" type="video/mp4"></video>`;
-        document.getElementById('details-overlay').style.display = 'flex';
+    function toggleAuth(mode) {
+        document.getElementById('login-screen').classList.toggle('hidden', mode === 'reg');
+        document.getElementById('register-screen').classList.toggle('hidden', mode === 'log');
     }
 
-    function abrirPlayerFull() {
-        fecharDetalhes();
-        document.getElementById('full-video-container').innerHTML = `<video controls autoplay style="width:100%; height:100%;"><source src="${midiaAtual.video}" type="video/mp4"></video>`;
-        document.getElementById('full-player').style.display = 'block';
-    }
-
-    function fecharPlayerFull() {
-        document.getElementById('full-player').style.display = 'none';
-        document.getElementById('full-video-container').innerHTML = "";
-        document.body.classList.remove('lights-off');
-    }
-
-    function abrirAdm() {
-        document.getElementById('admin-view').classList.toggle('hidden');
-        db.ref('users').on('value', snap => {
-            const list = document.getElementById('admin-users-list');
-            list.innerHTML = "";
-            snap.forEach(u => {
-                const user = u.val();
-                // O ATALHO PARA WHATSAPP ESTÁ AQUI:
-                list.innerHTML += `
-                    <div class="adm-list-item">
-                        <b>Cliente:</b> ${user.email}<br>
-                        <b>Endereço:</b> ${user.address}<br>
-                        <a href="https://wa.me/55${user.phone}" target="_blank" class="wa-btn">
-                            🟢 CHAMAR NO WHATSAPP (${user.phone})
-                        </a>
-                        <button onclick="liberar('${u.key}')" style="margin-left:10px; cursor:pointer;">+30 DIAS</button>
-                    </div>`;
-            });
-        });
-    }
-
-    function liberar(uid) {
-        const n = new Date(); n.setDate(n.getDate() + 30);
-        db.ref('users/' + uid).update({ valido_ate: n.toISOString() });
-        alert("Renovado!");
-    }
-
-    async function addMedia() {
-        const id = document.getElementById('adm-id').value, type = document.getElementById('adm-type').value, url = document.getElementById('adm-url').value;
-        const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=2eaf2fd731f81a77741ecb625b588a40&language=pt-BR`);
-        const d = await res.json();
-        await db.ref('catalog').push({ title: d.title || d.name, img: `https://image.tmdb.org/t/p/w500${d.poster_path}`, video: url, type: type, sinopse: d.overview, ano: (d.release_date || d.first_air_date || "2024").split("-")[0] });
-        alert("Postado!");
-    }
-
+    // --- CATALOGO E MODAIS ---
     function renderCatalogo() {
         db.ref('catalog').on('value', snap => {
             const rM = document.getElementById('row-movies'), rS = document.getElementById('row-series');
             rM.innerHTML = ""; rS.innerHTML = "";
             snap.forEach(i => {
                 const m = i.val();
-                const c = document.createElement('div'); c.className = 'card'; c.style.backgroundImage = `url(${m.img})`;
-                c.onclick = () => abrirDetalhes(m);
-                if(m.type === 'movie') rM.appendChild(c); else rS.appendChild(c);
+                const card = document.createElement('div');
+                card.className = 'card'; card.style.backgroundImage = `url(${m.img})`;
+                card.onclick = () => {
+                    midiaAtual = m;
+                    document.getElementById('det-title').innerText = m.title;
+                    document.getElementById('det-sinopse').innerText = m.sinopse;
+                    document.getElementById('preview-area').innerHTML = `<video autoplay muted loop style="width:100%;height:100%;object-fit:cover;"><source src="${m.video}"></video>`;
+                    document.getElementById('details-overlay').style.display = 'flex';
+                };
+                if(m.type === 'movie') rM.appendChild(card); else rS.appendChild(card);
             });
         });
     }
 
-    function toggleMenu() {
-        const s = document.getElementById('sidebar'), o = document.getElementById('sidebar-overlay');
-        s.classList.toggle('open'); o.style.display = s.classList.contains('open') ? 'block' : 'none';
+    function fecharDetalhes() { document.getElementById('details-overlay').style.display = 'none'; }
+    function abrirPlayer() {
+        document.getElementById('player-cont').innerHTML = `<video controls autoplay style="width:100%;height:100%;"><source src="${midiaAtual.video}"></video>`;
+        document.getElementById('full-player').style.display = 'flex';
+    }
+    function fecharPlayer() { 
+        document.getElementById('full-player').style.display = 'none'; 
+        document.getElementById('player-cont').innerHTML = "";
+        document.body.classList.remove('lights-off');
+    }
+
+    // --- ADM FUNCIONALIDADE ---
+    function toggleAdm() {
+        const view = document.getElementById('admin-view');
+        view.classList.toggle('hidden');
+        if(!view.classList.contains('hidden')) {
+            db.ref('users').on('value', snap => {
+                const list = document.getElementById('admin-users-list');
+                list.innerHTML = "";
+                snap.forEach(u => {
+                    const user = u.val();
+                    const isAdm = user.role === 'admin';
+                    list.innerHTML += `
+                        <div class="adm-item" style="border-left-color: ${isAdm ? 'gold' : '#007bff'}">
+                            <span class="badge ${isAdm ? 'badge-admin' : 'badge-user'}">${user.role}</span><br>
+                            <b>Email:</b> ${user.email}<br>
+                            <a href="https://wa.me/55${user.phone}" target="_blank" class="wa-link">🟢 WhatsApp: ${user.phone}</a>
+                            <small>Vence: ${new Date(user.valido_ate).toLocaleDateString()}</small><br>
+                            <button onclick="db.ref('users/${u.key}').update({role:'admin'})" style="font-size:9px;">Promover Master</button>
+                        </div>`;
+                });
+            });
+        }
+    }
+
+    async function addMedia() {
+        const id = document.getElementById('adm-id').value, type = document.getElementById('adm-type').value, url = document.getElementById('adm-url').value;
+        const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=2eaf2fd731f81a77741ecb625b588a40&language=pt-BR`);
+        const d = await res.json();
+        await db.ref('catalog').push({ title: d.title || d.name, img: `https://image.tmdb.org/t/p/w500${d.poster_path}`, video: url, type: type, sinopse: d.overview, ano: (d.release_date || d.first_air_date || "2025").split("-")[0] });
+        alert("Publicado!");
     }
 </script>
 </body>
