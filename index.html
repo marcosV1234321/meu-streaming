@@ -9,68 +9,74 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
 
     <style>
-        :root { --red: #e50914; --black: #141414; }
-        body { background: var(--black); color: white; font-family: Arial, sans-serif; margin: 0; overflow-x: hidden; }
+        :root { --red: #e50914; --black: #141414; --gray: #181818; }
+        body { background: var(--black); color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; overflow-x: hidden; }
         .hidden { display: none !important; }
         
         /* HEADER */
-        header { background: rgba(0,0,0,0.9); padding: 15px 4%; display: flex; justify-content: space-between; align-items: center; position: fixed; width: 100%; top: 0; z-index: 1000; box-sizing: border-box; border-bottom: 1px solid #333; }
-        .logo { color: var(--red); font-size: 24px; font-weight: bold; cursor: pointer; }
+        header { background: rgba(0,0,0,0.95); padding: 15px 4%; display: flex; justify-content: space-between; align-items: center; position: fixed; width: 100%; top: 0; z-index: 1000; box-sizing: border-box; border-bottom: 1px solid #333; }
+        .logo { color: var(--red); font-size: 26px; font-weight: bold; cursor: pointer; letter-spacing: 1px; }
 
-        /* BUSCADOR HOVER */
-        .search-container { display: flex; align-items: center; position: relative; margin-right: 20px; }
-        #search-bar { width: 0; padding: 0; opacity: 0; background: #222; border: 1px solid #444; color: white; border-radius: 20px; outline: none; transition: 0.5s; }
+        /* BUSCADOR INTELIGENTE */
+        .search-container { display: flex; align-items: center; position: relative; margin-right: 15px; }
+        #search-bar { width: 0; padding: 0; opacity: 0; background: #222; border: 1px solid #444; color: white; border-radius: 20px; outline: none; transition: 0.5s; font-size: 14px; }
         .search-container:hover #search-bar { width: 200px; padding: 8px 15px; opacity: 1; }
+        .search-icon { cursor: pointer; font-size: 20px; }
 
-        /* MENU LATERAL */
-        #sidebar { position: fixed; left: -250px; top: 0; width: 200px; height: 100%; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; padding-top: 80px; z-index: 3000; transition: 0.4s; border-right: 1px solid var(--red); }
+        /* MENU LATERAL E OVERLAY */
+        #sidebar { position: fixed; left: -260px; top: 0; width: 240px; height: 100%; background: #000; display: flex; flex-direction: column; padding-top: 90px; z-index: 4000; transition: 0.4s; border-right: 1px solid var(--red); }
         #sidebar.open { left: 0; }
-        .side-item { color: gray; margin: 15px 0; cursor: pointer; display: flex; align-items: center; padding-left: 20px; font-size: 16px; transition: 0.3s; }
-        .side-item:hover { color: white; border-left: 4px solid var(--red); }
+        .side-item { color: #808080; margin: 10px 0; cursor: pointer; display: flex; align-items: center; padding: 15px 25px; font-size: 17px; transition: 0.3s; }
+        .side-item:hover { color: white; background: rgba(229, 9, 20, 0.1); border-left: 5px solid var(--red); }
+        #sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 3500; display: none; }
 
-        /* LOGIN & CADASTRO */
-        #login-screen { height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://assets.nflxext.com/ffe/siteui/vlv3/f841d4c7-10e1-40af-bca1-07e3f8eb14af/BR-pt-20220502-perspective_alpha_website_medium.jpg'); background-size: cover; }
-        .login-box { background: rgba(0,0,0,0.85); padding: 40px; border-radius: 8px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #333; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; background: #333; border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; }
-        .btn-red { background: var(--red); color: white; border: none; padding: 12px; width: 100%; font-weight: bold; cursor: pointer; border-radius: 4px; transition: 0.3s; }
-        .btn-red:hover { filter: brightness(1.2); }
+        /* LOGIN E CADASTRO */
+        #login-screen { height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://assets.nflxext.com/ffe/siteui/vlv3/f841d4c7-10e1-40af-bca1-07e3f8eb14af/BR-pt-20220502-perspective_alpha_website_medium.jpg'); background-size: cover; }
+        .login-box { background: rgba(0,0,0,0.85); padding: 40px; border-radius: 10px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #333; }
+        input, select { width: 100%; padding: 14px; margin: 10px 0; background: #333; border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; }
+        .btn-red { background: var(--red); color: white; border: none; padding: 14px; width: 100%; font-weight: bold; cursor: pointer; border-radius: 4px; font-size: 16px; margin-top: 10px; }
+        .btn-red:hover { background: #ff1f1f; }
 
         /* CATALOGO */
-        .content { padding: 100px 4% 20px; transition: 0.5s; }
-        .row { margin-bottom: 30px; }
-        .row-title { font-size: 20px; font-weight: bold; margin-bottom: 10px; }
-        .row-cards { display: flex; overflow-x: auto; gap: 10px; padding: 10px 0; scrollbar-width: none; }
-        .card { min-width: 160px; height: 240px; background-size: cover; background-position: center; border-radius: 4px; cursor: pointer; transition: 0.3s; }
-        .card:hover { transform: scale(1.05); z-index: 2; border: 2px solid white; }
-
-        /* PLAYER MODAL */
-        #player-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 5000; display: none; }
-        .close-btn { position: absolute; top: 20px; right: 20px; font-size: 30px; color: white; cursor: pointer; z-index: 5100; }
+        .content { padding: 110px 4% 40px; }
+        .row { margin-bottom: 40px; }
+        .row-title { font-size: 22px; font-weight: bold; margin-bottom: 15px; color: #e5e5e5; }
+        .row-cards { display: flex; overflow-x: auto; gap: 12px; padding: 10px 0; scrollbar-width: none; }
+        .card { min-width: 170px; height: 250px; background-size: cover; background-position: center; border-radius: 6px; cursor: pointer; transition: 0.4s; position: relative; }
+        .card:hover { transform: scale(1.1); z-index: 5; box-shadow: 0 0 20px rgba(0,0,0,0.8); border: 2px solid white; }
 
         /* PLANOS */
-        .plan-container { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
-        .plan-card { background: #181818; border: 1px solid #333; padding: 25px; border-radius: 12px; width: 220px; text-align: center; }
-        .plan-card h2 { color: var(--red); font-size: 20px; }
-        .plan-price { font-size: 28px; font-weight: bold; margin: 15px 0; }
+        .plan-container { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 25px; }
+        .plan-card { background: var(--gray); border: 1px solid #333; padding: 30px; border-radius: 15px; width: 250px; text-align: center; transition: 0.3s; }
+        .plan-card:hover { border-color: var(--red); transform: translateY(-5px); }
+        .plan-price { font-size: 32px; font-weight: bold; margin: 20px 0; }
+
+        /* PLAYER */
+        #player-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 5000; display: none; }
+        .close-player { position: absolute; top: 25px; right: 25px; font-size: 35px; color: white; cursor: pointer; z-index: 5100; }
     </style>
 </head>
 <body>
 
+<div id="sidebar-overlay" onclick="toggleMenu()"></div>
+
 <div id="login-screen">
     <div class="login-box">
-        <h1 style="color:var(--red); margin-bottom:20px;">MASTER FLIX</h1>
-        <div id="login-form">
-            <input type="email" id="email" placeholder="E-mail">
-            <input type="password" id="pass" placeholder="Senha">
-            <button class="btn-red" onclick="handleLogin()">ENTRAR</button>
-            <p style="margin-top:15px; font-size:14px; color:gray;">Novo por aqui? <span onclick="toggleAuth()" style="color:white; cursor:pointer; font-weight:bold;">Assine agora (7 dias grátis)</span></p>
-        </div>
-        <div id="register-form" class="hidden">
-            <h2 style="font-size:18px;">CRIAR CONTA MASTER</h2>
-            <input type="email" id="new-email" placeholder="Seu melhor e-mail">
-            <input type="password" id="new-pass" placeholder="Crie uma senha (mín. 6 dgt)">
-            <button class="btn-red" onclick="executarCadastro()">CRIAR E INICIAR TESTE</button>
-            <p onclick="toggleAuth()" style="margin-top:15px; color:gray; cursor:pointer;">Já tenho conta</p>
+        <h1 style="color:var(--red); font-size: 35px; margin-bottom: 30px;">MASTER FLIX</h1>
+        <div id="auth-forms">
+            <div id="login-form">
+                <input type="email" id="email" placeholder="E-mail">
+                <input type="password" id="pass" placeholder="Senha">
+                <button class="btn-red" onclick="handleLogin()">ENTRAR</button>
+                <p style="color:gray; margin-top:20px;">Novo por aqui? <span onclick="toggleAuth()" style="color:white; cursor:pointer; font-weight:bold;">Assine (7 dias grátis)</span></p>
+            </div>
+            <div id="register-form" class="hidden">
+                <h2 style="font-size: 18px;">CRIA CONTA MASTER</h2>
+                <input type="email" id="new-email" placeholder="Seu melhor e-mail">
+                <input type="password" id="new-pass" placeholder="Crie uma senha (mín. 6 dgt)">
+                <button class="btn-red" onclick="executarCadastro()">INICIAR TESTE GRÁTIS</button>
+                <p onclick="toggleAuth()" style="color:gray; margin-top:20px; cursor:pointer;">Já tenho conta</p>
+            </div>
         </div>
     </div>
 </div>
@@ -78,16 +84,16 @@
 <div id="app-screen" class="hidden">
     <header>
         <div style="display:flex; align-items:center;">
-            <span onclick="toggleMenu()" style="font-size:24px; cursor:pointer; margin-right:20px;">☰</span>
+            <span onclick="toggleMenu()" style="font-size:28px; cursor:pointer; margin-right:20px;">☰</span>
             <div class="logo" onclick="location.reload()">MASTER FLIX</div>
         </div>
         <div style="display:flex; align-items:center;">
             <div class="search-container">
-                <span style="cursor:pointer; margin-right:5px;">🔍</span>
-                <input type="text" id="search-bar" placeholder="Buscar títulos..." oninput="filtrarBusca(this.value)">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="search-bar" placeholder="O que vamos assistir?" oninput="filtrarBusca(this.value)">
             </div>
             <button id="btn-master" class="hidden" onclick="document.getElementById('admin-view').classList.toggle('hidden')" style="background:var(--red); color:white; border:none; padding:8px 15px; border-radius:4px; font-weight:bold; cursor:pointer;">ADM</button>
-            <button onclick="auth.signOut()" style="background:none; border:1px solid white; color:white; padding:7px 12px; border-radius:4px; cursor:pointer; margin-left:10px;">SAIR</button>
+            <button onclick="auth.signOut()" style="background:none; border:1px solid white; color:white; padding:8px 15px; border-radius:4px; cursor:pointer; margin-left:15px;">SAIR</button>
         </div>
     </header>
 
@@ -97,40 +103,48 @@
         <div class="side-item" onclick="filtrarCat('movie')">🎬 Filmes</div>
         <div class="side-item" onclick="filtrarCat('tv')">📺 Séries</div>
         <div style="flex-grow:1"></div>
-        <div class="side-item" onclick="abrirSuporte()">📞 Suporte Master</div>
+        <div class="side-item" onclick="abrirSuporte()">📞 Suporte / Contato</div>
     </div>
 
     <div class="content">
-        <div id="admin-view" class="hidden" style="background:#222; padding:20px; border-radius:8px; margin-bottom:30px; border:1px solid var(--red);">
-            <h3>UPLOAD & CONFIGURAÇÕES MASTER</h3>
-            <input type="text" id="adm-id" placeholder="ID TMDB">
+        <div id="admin-view" class="hidden" style="background:#222; padding:25px; border-radius:10px; margin-bottom:40px; border:1px solid var(--red);">
+            <h3>GERENCIAMENTO MASTER</h3>
+            <input type="text" id="adm-id" placeholder="ID TMDB (Filme ou Série)">
             <select id="adm-type"><option value="movie">Filme</option><option value="tv">Série</option></select>
-            <input type="text" id="adm-url" placeholder="Link do Vídeo (.mp4 ou Embed)">
-            <button class="btn-red" onclick="addMedia()">PUBLICAR</button>
-            <hr style="margin:20px 0; opacity:0.1;">
+            <input type="text" id="adm-url" placeholder="URL do Vídeo (.mp4)">
+            <button class="btn-red" onclick="addMedia()">PUBLICAR NO CATÁLOGO</button>
+            <hr style="margin:25px 0; opacity:0.1;">
             <div id="admin-users-list"></div>
         </div>
 
         <div class="row">
-            <p class="row-title">Filmes</p>
+            <p class="row-title">Filmes Populares</p>
             <div id="row-movies" class="row-cards"></div>
         </div>
         <div class="row">
-            <p class="row-title">Séries</p>
+            <p class="row-title">Séries em Alta</p>
             <div id="row-series" class="row-cards"></div>
         </div>
     </div>
 </div>
 
-<div id="pay-screen" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:var(--black); z-index:10000; display:flex; align-items:center; justify-content:center; flex-direction:column; text-align:center;">
-    <h1 style="color:var(--red);">SEU TESTE EXPIROU</h1>
-    <p>Escolha um plano para continuar sua experiência Premium.</p>
-    <div class="plan-container" id="planos-lista"></div>
-    <p onclick="auth.signOut()" style="margin-top:20px; color:gray; cursor:pointer;">Voltar ao Login</p>
+<div id="pay-screen" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:var(--black); z-index:10000; display:flex; align-items:center; justify-content:center; flex-direction:column; text-align:center; padding:20px; box-sizing:border-box;">
+    <h1 style="color:var(--red); font-size: 40px;">ACESSO EXPIRADO</h1>
+    <p style="font-size: 18px; max-width: 600px;">Seu período de teste ou assinatura chegou ao fim. Escolha um plano Master abaixo:</p>
+    <div class="plan-container">
+        <div class="plan-card">
+            <h2>PLANO MASTER</h2>
+            <p>Telas ilimitadas + 4K</p>
+            <div class="plan-price">R$ 39,90</div>
+            <button class="btn-red" onclick="irStripe()">ASSINAR CARTÃO</button>
+            <button class="btn-red" style="background:#27ae60; margin-top:10px;" onclick="abrirSuporte('PIX')">PAGAR VIA PIX</button>
+        </div>
+    </div>
+    <p onclick="auth.signOut()" style="margin-top:30px; color:gray; cursor:pointer; text-decoration: underline;">Sair e entrar com outra conta</p>
 </div>
 
 <div id="player-modal">
-    <span class="close-btn" onclick="fecharPlayer()">✕</span>
+    <span class="close-player" onclick="fecharPlayer()">✕</span>
     <div id="video-container" style="width:100%; height:100%;"></div>
 </div>
 
@@ -150,10 +164,9 @@
     const db = firebase.database();
     const auth = firebase.auth();
 
-    // VARIÁVEIS DE NEGÓCIO
-    const CONFIG = { zap: "5511999999999", stripe_ouro: "LINK_STRIPE_OURO" };
+    const MASTER_CONFIG = { zap: "5511999999999", stripe: "SEU_LINK_STRIPE" };
 
-    // --- AUTENTICAÇÃO E CADASTRO CORRIGIDO ---
+    // --- LÓGICA DE AUTENTICAÇÃO ---
     function toggleAuth() {
         document.getElementById('login-form').classList.toggle('hidden');
         document.getElementById('register-form').classList.toggle('hidden');
@@ -162,28 +175,28 @@
     async function handleLogin() {
         const e = document.getElementById('email').value;
         const p = document.getElementById('pass').value;
-        try { await auth.signInWithEmailAndPassword(e, p); } catch(err) { alert("Login Inválido!"); }
+        try { await auth.signInWithEmailAndPassword(e, p); } catch(err) { alert("E-mail ou senha incorretos!"); }
     }
 
     async function executarCadastro() {
         const email = document.getElementById('new-email').value.trim();
         const pass = document.getElementById('new-pass').value.trim();
-        if(pass.length < 6) return alert("A senha deve ter 6 dígitos.");
+        if(pass.length < 6) return alert("A senha precisa de 6 dígitos.");
 
         try {
             const res = await auth.createUserWithEmailAndPassword(email, pass);
-            const trialDate = new Date();
-            trialDate.setDate(trialDate.getDate() + 7); // Libera 7 dias
+            const expira = new Date();
+            expira.setDate(expira.getDate() + 7); // +7 dias grátis
 
             await db.ref('users/' + res.user.uid).set({
                 email: email,
                 role: 'user',
-                valido_ate: trialDate.toISOString(),
+                valido_ate: expira.toISOString(),
                 status: 'trial'
             });
-            alert("CONTA CRIADA! 7 dias grátis liberados.");
+            alert("BEM-VINDO! 7 dias de acesso grátis liberados.");
             location.reload();
-        } catch(e) { alert("Erro: " + e.message); }
+        } catch(e) { alert("Erro ao cadastrar: " + e.message); }
     }
 
     auth.onAuthStateChanged(user => {
@@ -191,18 +204,21 @@
             db.ref('users/' + user.uid).on('value', snap => {
                 const u = snap.val();
                 if(!u) return;
+                
                 const expira = new Date(u.valido_ate);
                 const agora = new Date();
 
                 if(agora > expira && u.role !== 'admin') {
-                    mostrarPlanos();
+                    document.getElementById('login-screen').classList.add('hidden');
+                    document.getElementById('app-screen').classList.add('hidden');
+                    document.getElementById('pay-screen').classList.remove('hidden');
                 } else {
                     document.getElementById('login-screen').classList.add('hidden');
                     document.getElementById('pay-screen').classList.add('hidden');
                     document.getElementById('app-screen').classList.remove('hidden');
                     if(u.role === 'admin') {
                         document.getElementById('btn-master').classList.remove('hidden');
-                        renderAdminTools();
+                        renderAdminList();
                     }
                     renderCatalogo();
                 }
@@ -210,11 +226,17 @@
         } else {
             document.getElementById('login-screen').classList.remove('hidden');
             document.getElementById('app-screen').classList.add('hidden');
+            document.getElementById('pay-screen').classList.add('hidden');
         }
     });
 
-    // --- CATÁLOGO E INTERFACE ---
-    function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); }
+    // --- INTERFACE E MENU ---
+    function toggleMenu() {
+        const side = document.getElementById('sidebar');
+        const over = document.getElementById('sidebar-overlay');
+        side.classList.toggle('open');
+        over.style.display = side.classList.contains('open') ? 'block' : 'none';
+    }
 
     function renderCatalogo(filtro = 'all', busca = '') {
         const rM = document.getElementById('row-movies');
@@ -247,51 +269,52 @@
         document.getElementById('video-container').innerHTML = "";
     }
 
-    function mostrarPlanos() {
-        document.getElementById('pay-screen').classList.remove('hidden');
-        const lista = document.getElementById('planos-lista');
-        lista.innerHTML = `
-            <div class="plan-card"><h2>Plano Ouro</h2><p>4 Telas + 4K</p><div class="plan-price">R$ 44,90</div><button class="btn-red" onclick="irStripe()">CARTÃO</button></div>
-            <div class="plan-card"><h2>PIX Master</h2><p>Liberação Imediata</p><div class="plan-price">R$ 39,90</div><button class="btn-red" style="background:#27ae60" onclick="abrirSuporte('PIX')">PIX</button></div>
-        `;
-    }
-
     function filtrarBusca(v) { renderCatalogo('all', v); }
     function filtrarCat(c) { toggleMenu(); renderCatalogo(c); }
-    function abrirSuporte(msg = "") { window.open(`https://wa.me/${CONFIG.zap}?text=Preciso de Ajuda ${msg}`, '_blank'); }
-    function irStripe() { window.location.href = CONFIG.stripe_ouro + "?prefilled_email=" + auth.currentUser.email; }
+    function abrirSuporte(extra = "") { window.open(`https://wa.me/${MASTER_CONFIG.zap}?text=Olá Master! Preciso de suporte ${extra}`, '_blank'); }
+    function irStripe() { window.location.href = MASTER_CONFIG.stripe + "?prefilled_email=" + auth.currentUser.email; }
 
-    // --- ADMIN ---
+    // --- ÁREA ADM ---
     async function addMedia() {
         const id = document.getElementById('adm-id').value;
         const type = document.getElementById('adm-type').value;
         const url = document.getElementById('adm-url').value;
-        const key = "2eaf2fd731f81a77741ecb625b588a40";
-        const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${key}&language=pt-BR`);
-        const d = await res.json();
-        await db.ref('catalog').push({ title: d.title || d.name, img: `https://image.tmdb.org/t/p/w500${d.poster_path}`, video: url, type: type });
-        alert("Publicado!");
+        if(!id || !url) return alert("Preencha tudo!");
+        
+        try {
+            const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=2eaf2fd731f81a77741ecb625b588a40&language=pt-BR`);
+            const d = await res.json();
+            await db.ref('catalog').push({
+                title: d.title || d.name,
+                img: `https://image.tmdb.org/t/p/w500${d.poster_path}`,
+                video: url,
+                type: type
+            });
+            alert("Mídia adicionada com sucesso!");
+        } catch(e) { alert("Erro ao buscar no TMDB"); }
     }
 
-    function renderAdminTools() {
+    function renderAdminList() {
         db.ref('users').on('value', snap => {
             const list = document.getElementById('admin-users-list');
-            list.innerHTML = "<h4>GESTÃO DE USUÁRIOS</h4>";
+            list.innerHTML = "<h4 style='margin-top:20px;'>USUÁRIOS CADASTRADOS</h4>";
             snap.forEach(u => {
                 const user = u.val();
-                list.innerHTML += `<div style="padding:5px; border-bottom:1px solid #333; font-size:12px;">${user.email} - <button onclick="liberar('${u.key}')">LIBERAR +30 DIAS</button></div>`;
+                list.innerHTML += `<div style="padding:10px; background:#111; margin-bottom:5px; display:flex; justify-content:space-between; align-items:center;">
+                    <span>${user.email}</span>
+                    <button onclick="liberarUsuario('${u.key}')" style="background:green; color:white; border:none; padding:5px 10px; cursor:pointer;">+30 DIAS</button>
+                </div>`;
             });
         });
     }
 
-    function liberar(uid) {
-        const novaData = new Date();
-        novaData.setDate(novaData.getDate() + 30);
-        db.ref('users/' + uid).update({ valido_ate: novaData.toISOString(), status: 'pago' });
-        alert("Liberado!");
+    function liberarUsuario(uid) {
+        const nova = new Date();
+        nova.setDate(nova.getDate() + 30);
+        db.ref('users/' + uid).update({ valido_ate: nova.toISOString(), status: 'pago' });
+        alert("Usuário liberado!");
     }
 </script>
 
 </body>
 </html>
-
