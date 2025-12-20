@@ -16,16 +16,14 @@
         body { background: var(--dark); color: white; overflow-x: hidden; }
         .hidden { display: none !important; }
 
-        /* HEADER ALINHADO */
         header { position: fixed; top: 0; width: 100%; height: 70px; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: space-between; padding: 0 5%; z-index: 1000; border-bottom: 1px solid #222; }
         .header-left { display: flex; align-items: center; gap: 15px; }
         .logo { color: var(--red); font-size: 1.3rem; font-weight: 900; cursor: pointer; text-transform: uppercase; white-space: nowrap; }
         .header-right { display: flex; align-items: center; gap: 10px; }
         
         #search-input { background: #222; border: 1px solid #444; color: white; padding: 8px 12px; border-radius: 4px; outline: none; width: 120px; }
-        .admin-btn { background: var(--gold); border: none; padding: 8px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; }
+        .admin-btn { background: var(--gold); border: none; padding: 8px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; color: #000; }
 
-        /* SIDEBAR COM SUBMENU */
         #sidebar { position: fixed; left: -280px; top: 0; width: 260px; height: 100vh; background: #000; z-index: 3000; transition: 0.4s; border-right: 1px solid #222; overflow-y: auto; }
         #sidebar.open { left: 0; }
         .menu-list { list-style: none; padding-top: 80px; }
@@ -36,18 +34,15 @@
         .submenu li { font-size: 0.9rem; padding: 10px 25px; border: none; }
         .submenu.active { display: block; }
 
-        /* CATALOGO */
         .content-area { padding: 90px 4% 40px; }
         .section-title { font-size: 1.2rem; margin: 25px 0 10px; color: #fff; font-weight: bold; border-left: 4px solid var(--red); padding-left: 10px; }
         .carousel-cards { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 15px; scrollbar-width: none; }
         .card { width: 140px; height: 200px; flex: 0 0 auto; background-size: cover; background-position: center; border-radius: 6px; cursor: pointer; transition: 0.3s; }
         .card:hover { transform: scale(1.05); box-shadow: 0 0 15px var(--red); }
 
-        /* ADMIN */
         .admin-box { background: var(--gray); padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 2px solid var(--gold); }
         .admin-box input, .admin-box select { width: 100%; padding: 12px; margin: 8px 0; background: #000; border: 1px solid #444; color: white; border-radius: 4px; }
 
-        /* MODAIS */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; display: flex; align-items: center; justify-content: center; }
         .modal-content { background: #181818; width: 90%; max-width: 500px; border-radius: 8px; overflow: hidden; }
         .btn-watch { background: var(--red); color: white; border: none; padding: 15px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 15px; }
@@ -73,7 +68,6 @@
     <nav id="sidebar">
         <ul class="menu-list">
             <li onclick="location.reload()"><i class="fas fa-home"></i> Início</li>
-            
             <li onclick="ui.toggleSubmenu('sub-filmes')">
                 <span><i class="fas fa-film"></i> Filmes</span>
                 <i class="fas fa-chevron-down"></i>
@@ -85,7 +79,6 @@
                 <li onclick="app.filter('Comédia')">Comédia</li>
                 <li onclick="app.filter('Ficção')">Ficção</li>
             </ul>
-
             <li onclick="app.filter('Séries')"><i class="fas fa-tv"></i> Séries</li>
             <li onclick="app.filter('Infantil')"><i class="fas fa-child"></i> Infantil</li>
             <li onclick="app.filter('Documentários')"><i class="fas fa-book"></i> Documentários</li>
@@ -97,23 +90,19 @@
     <main class="content-area">
         <div id="admin-panel" class="admin-box hidden">
             <h3 style="color:var(--gold)">POSTAR CONTEÚDO</h3>
-            <input type="text" id="tmdb-id" placeholder="ID TMDB">
-            
-            <select id="main-cat" onchange="ui.toggleGenreInput()" style="width:100%; padding:12px; margin:8px 0; background:#000; color:white;">
-                <option value="Filmes">Filmes</option>
-                <option value="Séries">Séries</option>
-                <option value="Infantil">Infantil</option>
-                <option value="Documentários">Documentários</option>
-            </select>
-            
-            <div id="genre-container">
-                <input type="text" id="sub-cat" placeholder="Gênero (Terror, Ação, Suspense...)">
+            <div id="admin-content-default">
+                <input type="text" id="tmdb-id" placeholder="ID TMDB">
+                <select id="main-cat" style="width:100%; padding:12px; margin:8px 0; background:#000; color:white;">
+                    <option value="Filmes">Filmes</option>
+                    <option value="Séries">Séries</option>
+                    <option value="Infantil">Infantil</option>
+                    <option value="Documentários">Documentários</option>
+                </select>
+                <input type="text" id="sub-cat" placeholder="Gênero (Terror, Ação...)">
+                <input type="text" id="video-url" placeholder="URL .mp4">
+                <button onclick="app.post()" style="width:100%; padding:15px; background:var(--red); color:white; border:none; font-weight:bold; cursor:pointer;">PUBLICAÇÃO RÁPIDA</button>
             </div>
-
-            <input type="text" id="video-url" placeholder="URL .mp4">
-            <button onclick="app.post()" style="width:100%; padding:15px; background:var(--red); color:white; border:none; font-weight:bold; cursor:pointer;">PUBLICAR</button>
         </div>
-        
         <div id="catalog-area"></div>
     </main>
 
@@ -142,7 +131,6 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database(), auth = firebase.auth();
-
         let allMedia = [], currentUser = null, activeMedia = null;
 
         const ui = {
@@ -152,7 +140,10 @@
                 o.style.display = s.classList.contains('open') ? 'block' : 'none';
             },
             toggleSubmenu: (id) => document.getElementById(id).classList.toggle('active'),
-            toggleAdmin: () => document.getElementById('admin-panel').classList.toggle('hidden'),
+            toggleAdmin: () => {
+                document.getElementById('admin-panel').classList.toggle('hidden');
+                if(typeof app.initAdminTabs === 'function') app.initAdminTabs();
+            },
             closeModal: () => document.getElementById('modal-details').classList.add('hidden'),
             play: () => {
                 ui.closeModal();
@@ -171,9 +162,10 @@
                     if (user) {
                         const snap = await db.ref('users/' + user.uid).once('value');
                         currentUser = snap.val() || { role: 'user' };
+                        currentUser.uid = user.uid;
                         if(currentUser.role === 'admin') document.getElementById('btn-adm').classList.remove('hidden');
                         app.loadCatalog();
-                    } else { location.reload(); }
+                    } else { /* Redirecionamento de login aqui */ }
                 });
             },
             loadCatalog: () => {
@@ -181,17 +173,13 @@
                     const area = document.getElementById('catalog-area');
                     area.innerHTML = ""; allMedia = [];
                     const sections = {};
-
                     snap.forEach(i => {
                         const m = i.val(); m.key = i.key;
                         allMedia.push(m);
-                        
-                        // Define o nome da seção baseado no Gênero (se existir) ou Categoria
                         const sName = m.genre || m.category;
                         if(!sections[sName]) sections[sName] = [];
                         sections[sName].push(m);
                     });
-
                     for(let name in sections) {
                         const h2 = document.createElement('h2'); h2.className="section-title"; h2.innerText = name;
                         const row = document.createElement('div'); row.className="carousel-cards";
@@ -217,22 +205,15 @@
                 const cat = document.getElementById('main-cat').value;
                 const gen = document.getElementById('sub-cat').value;
                 const url = document.getElementById('video-url').value;
-                
+                if(!id || !url) return alert("Preencha ID e Vídeo!");
                 const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=2eaf2fd731f81a77741ecb625b588a40&language=pt-BR`);
                 const d = await res.json();
-                
-                db.ref('catalog').push({
-                    title: d.title,
-                    img: `https://image.tmdb.org/t/p/w500${d.poster_path}`,
-                    sinopse: d.overview,
-                    video: url,
-                    category: cat,
-                    genre: gen || (d.genres ? d.genres[0].name : null)
-                });
+                db.ref('catalog').push({ title: d.title, img: `https://image.tmdb.org/t/p/w500${d.poster_path}`, sinopse: d.overview, video: url, category: cat, genre: gen || null });
                 alert("Publicado!");
             }
         };
         window.onload = app.init;
     </script>
+    <script src="updates.js"></script>
 </body>
 </html>
