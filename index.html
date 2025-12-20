@@ -3,181 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MASTER FLIX PRO - ADAPTATIVO</title>
+    <title>MASTER FLIX PRO</title>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
 
     <style>
         :root { --red: #e50914; --black: #141414; --gold: #ffc107; }
-        body { background: var(--black); color: white; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; overflow-x: hidden; }
+        body { background: var(--black); color: white; font-family: Arial, sans-serif; margin: 0; overflow-x: hidden; }
         .hidden { display: none !important; }
         
-        /* HEADER RESPONSIVO */
-        header { 
-            background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, transparent 100%); 
-            padding: 10px 4%; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            position: fixed; 
-            width: 100%; 
-            top: 0; 
-            z-index: 1000; 
-            box-sizing: border-box; 
-        }
-        .search-box { 
-            background: rgba(0,0,0,0.6); 
-            border: 1px solid #444; 
-            color: white; 
-            padding: 8px 12px; 
-            border-radius: 4px; 
-            outline: none;
-            width: 120px; /* Menor no celular */
-            transition: width 0.3s;
-        }
-        .search-box:focus { width: 200px; }
-
-        /* SIDEBAR */
-        #sidebar { position: fixed; left: -280px; top: 0; width: 260px; height: 100%; background: #000; z-index: 2000; transition: 0.4s; padding-top: 80px; border-right: 1px solid #333; }
-        #sidebar.open { left: 0; }
-        .side-item { padding: 15px 25px; cursor: pointer; color: #bbb; border-bottom: 1px solid #111; display: block; text-decoration: none; }
-
-        /* CATEGORIAS E FILEIRAS */
-        .content { padding: 80px 0 40px 4%; }
-        .row-title { font-size: 1.2rem; font-weight: bold; margin: 25px 0 10px; color: #e5e5e5; }
-        .row-cards { 
-            display: flex; 
-            overflow-x: auto; 
-            gap: 10px; 
-            padding-bottom: 20px; 
-            scrollbar-width: none; /* Firefox */
-        }
-        .row-cards::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+        /* LOADER */
+        #loader { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 10000; }
         
-        .card { 
-            min-width: 130px; /* Menor para mobile */
-            height: 190px; 
-            background-size: cover; 
-            background-position: center;
-            border-radius: 4px; 
-            cursor: pointer; 
-            transition: transform 0.3s; 
-        }
+        /* LOGIN BOX */
+        .auth-screen { height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
+        .auth-box { background: #111; padding: 30px; border-radius: 8px; width: 100%; max-width: 400px; border: 1px solid #333; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; }
+        .btn-red { background: var(--red); color: white; border: none; padding: 14px; width: 100%; font-weight: bold; cursor: pointer; border-radius: 4px; font-size: 16px; }
 
-        /* MODAL DETALHES ADAPTATIVO */
-        .modal-wrap { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 5000; display: none; align-items: center; justify-content: center; }
-        .details-container { 
-            background: #181818; 
-            width: 95%; 
-            max-width: 900px; 
-            max-height: 90vh;
-            border-radius: 8px; 
-            overflow-y: auto; 
-            display: flex; 
-            flex-direction: column; /* Coluna no mobile */
-        }
-        .details-video { width: 100%; background: #000; height: 200px; }
-        .details-info { padding: 20px; }
-        .btn-red { background: var(--red); color: white; border: none; padding: 15px; width: 100%; font-weight: bold; cursor: pointer; border-radius: 4px; font-size: 1rem; }
+        /* HEADER */
+        header { background: #000; padding: 10px 4%; display: flex; justify-content: space-between; align-items: center; position: fixed; width: 100%; top: 0; z-index: 1000; box-sizing: border-box; }
+        .logo { color: var(--red); font-weight: bold; font-size: 1.5rem; }
 
-        /* PAINEL ADM */
-        .adm-panel { background: #111; border: 1px solid var(--gold); padding: 15px; border-radius: 8px; margin: 0 4% 20px 0; }
+        /* CONTENT */
+        .content { padding: 80px 4% 40px; }
+        .row-title { font-size: 1.2rem; margin: 20px 0 10px; font-weight: bold; }
+        .row-cards { display: flex; overflow-x: auto; gap: 10px; padding-bottom: 10px; scrollbar-width: none; }
+        .row-cards::-webkit-scrollbar { display: none; }
+        .card { min-width: 140px; height: 210px; background-size: cover; background-position: center; border-radius: 4px; cursor: pointer; transition: 0.3s; flex-shrink: 0; }
+        .card:hover { transform: scale(1.05); }
 
-        /* MEDIA QUERIES PARA COMPUTADOR (TELAS GRANDES) */
+        /* MODAL */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; display: none; align-items: center; justify-content: center; padding: 10px; }
+        .modal-content { background: #181818; width: 100%; max-width: 800px; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; }
+        .modal-video { width: 100%; height: 250px; background: #000; }
+        .modal-info { padding: 20px; }
+
         @media (min-width: 768px) {
+            .modal-content { flex-direction: row; height: 450px; }
+            .modal-video { width: 60%; height: 100%; }
+            .modal-info { width: 40%; }
             .card { min-width: 180px; height: 270px; }
-            .details-container { flex-direction: row; overflow: hidden; }
-            .details-video { width: 60%; height: 450px; }
-            .details-info { width: 40%; padding: 40px; }
-            .search-box { width: 200px; }
-            .search-box:focus { width: 350px; }
-            .row-title { font-size: 1.5rem; }
         }
 
-        /* PLAYER */
-        #player-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 6000; display: none; }
-        .player-controls { position: absolute; top: 15px; right: 15px; z-index: 7000; display: flex; gap: 10px; }
-        .control-btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 10px; border-radius: 50%; cursor: pointer; }
-
-        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        /* PLAYER OVERLAY */
+        #player-overlay { position: fixed; inset: 0; background: #000; z-index: 6000; display: none; }
+        .lights-off header, .lights-off .content { opacity: 0; pointer-events: none; }
     </style>
 </head>
 <body>
 
-<div id="loader"><h1>MASTER FLIX...</h1></div>
+    <div id="loader"><h1>MASTER FLIX...</h1></div>
 
-<div id="sidebar-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1500; display:none;" onclick="toggleMenu()"></div>
-<nav id="sidebar">
-    <div class="side-item" onclick="scrollToRow('row-fav')">🔥 Mais Assistidos</div>
-    <div class="side-item" onclick="scrollToRow('row-movies-list')">🎬 Filmes</div>
-    <div class="side-item" onclick="scrollToRow('row-series-list')">📺 Séries</div>
-    <div class="side-item" onclick="auth.signOut()">🚪 Sair</div>
-</nav>
-
-<div id="app-screen" class="hidden">
-    <header>
-        <div style="display:flex; align-items:center;">
-            <span onclick="toggleMenu()" style="font-size:24px; cursor:pointer; margin-right:15px;">☰</span>
-            <div style="color:var(--red); font-weight:bold; font-size:1.2rem;">MASTER FLIX</div>
+    <div id="auth-screen" class="auth-screen hidden">
+        <div class="auth-box">
+            <h1 style="color:var(--red)">LOGIN</h1>
+            <input type="email" id="email" placeholder="Seu E-mail">
+            <input type="password" id="pass" placeholder="Sua Senha">
+            <button class="btn-red" onclick="logar()">ENTRAR NO MASTER FLIX</button>
         </div>
-        <div style="display:flex; align-items:center; gap:10px;">
-            <input type="text" id="search" class="search-box" placeholder="Buscar..." onkeyup="buscar()">
-            <button id="btn-adm" class="hidden" onclick="toggleAdm()" style="background:var(--gold); border:none; padding:6px 10px; font-weight:bold; cursor:pointer; border-radius:4px; font-size:12px;">ADM</button>
-        </div>
-    </header>
+    </div>
 
-    <main class="content">
-        <div id="adm-view" class="hidden adm-panel">
-            <h3 style="color:var(--gold)">PAINEL MASTER</h3>
-            <div id="user-list" style="max-height: 150px; overflow-y: auto; background: #222; padding: 10px;"></div>
-            <div style="margin-top:15px;">
+    <div id="app-screen" class="hidden">
+        <header>
+            <div class="logo">MASTER FLIX</div>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="search" style="padding:5px; border-radius:4px; border:none; width:100px;" placeholder="Busca..." onkeyup="buscar()">
+                <button id="btn-adm" class="hidden" onclick="toggleAdm()" style="background:var(--gold); border:none; padding:5px 10px; border-radius:4px; font-weight:bold; cursor:pointer;">ADM</button>
+                <button onclick="auth.signOut()" style="background:none; border:1px solid #444; color:white; cursor:pointer; padding:5px 10px; border-radius:4px;">Sair</button>
+            </div>
+        </header>
+
+        <main class="content">
+            <div id="adm-view" class="hidden" style="background:#222; padding:15px; border-radius:8px; margin-bottom:20px; border:1px solid var(--gold);">
+                <h2 style="color:var(--gold)">Painel Master</h2>
                 <input type="text" id="m-id" placeholder="ID TMDB">
-                <select id="m-type"><option value="movie">Filme</option><option value="tv">Série</option></select>
-                <input type="text" id="m-url" placeholder="Link MP4">
-                <button class="btn-red" style="margin-top:5px;" onclick="addMidia()">POSTAR</button>
+                <input type="text" id="m-url" placeholder="URL Vídeo (MP4)">
+                <button class="btn-red" onclick="postar()">POSTAR AGORA</button>
+                <div id="user-list" style="margin-top:15px; font-size:12px;"></div>
+            </div>
+
+            <div id="area-normal">
+                <div class="row-title">Lançamentos</div>
+                <div id="row-movies" class="row-cards"></div>
+                <div class="row-title">Séries</div>
+                <div id="row-series" class="row-cards"></div>
+            </div>
+        </main>
+    </div>
+
+    <div id="modal-det" class="modal" onclick="fecharModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-video" id="preview-video"></div>
+            <div class="modal-info">
+                <h2 id="det-titulo"></h2>
+                <p id="det-sinopse" style="color:#aaa; font-size:14px; height:150px; overflow-y:auto;"></p>
+                <button class="btn-red" onclick="play()">ASSISTIR AGORA</button>
             </div>
         </div>
-
-        <div id="area-busca" class="hidden">
-            <div class="row-title">Resultado da Busca</div>
-            <div id="grid-busca" class="row-cards"></div>
-        </div>
-
-        <section id="area-normal">
-            <div class="row-title">🔥 Mais Assistidos</div>
-            <div id="row-fav" class="row-cards"></div>
-
-            <div class="row-title">🎬 Filmes</div>
-            <div id="row-movies-list" class="row-cards"></div>
-
-            <div class="row-title">📺 Séries</div>
-            <div id="row-series-list" class="row-cards"></div>
-        </section>
-    </main>
-</div>
-
-<div id="det-modal" class="modal-wrap" onclick="fecharDet()">
-    <div class="details-container" onclick="event.stopPropagation()">
-        <div class="details-video" id="vid-preview"></div>
-        <div class="details-info">
-            <h2 id="det-title" style="margin-top:0; font-size: 1.5rem;"></h2>
-            <p id="det-text" style="color:#ccc; font-size:0.9rem; line-height:1.4; margin-bottom:20px;"></p>
-            <button class="btn-red" onclick="abrirPlayer()">ASSISTIR AGORA</button>
-        </div>
     </div>
-</div>
 
-<div id="player-overlay">
-    <div class="player-controls">
-        <button class="control-btn" onclick="document.body.classList.toggle('lights-off')">💡</button>
-        <button class="control-btn" onclick="fecharPlayer()">✕</button>
+    <div id="player-overlay">
+        <div style="position:absolute; top:20px; right:20px; z-index:7000; display:flex; gap:10px;">
+            <button onclick="document.body.classList.toggle('lights-off')" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:10px; border-radius:50%; cursor:pointer;">💡</button>
+            <button onclick="fecharPlayer()" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:10px; border-radius:50%; cursor:pointer;">✕</button>
+        </div>
+        <div id="player-cont" style="width:100%; height:100%;"></div>
     </div>
-    <div id="player-cont" style="width:100%; height:100%;"></div>
-</div>
 
 <script>
-    // Configurações do Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyCzxrJMumx3lbjsOXv9JHdXrn29jUg3x_0",
         authDomain: "outflix-9e57d.firebaseapp.com",
@@ -186,123 +121,84 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database(), auth = firebase.auth();
-    let dadosMidia = [], midiaAtiva = null;
+    let listaTotal = [], midiaSelecionada = null;
 
-    // Monitor de Sessão
+    // CONTROLE DE ACESSO
     auth.onAuthStateChanged(async user => {
-        if(user) {
+        document.getElementById('loader').classList.add('hidden');
+        if (user) {
             const snap = await db.ref('users/' + user.uid).once('value');
             const u = snap.val();
-            if(u) {
+            if (u) {
+                document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('app-screen').classList.remove('hidden');
                 if(u.role === 'admin') document.getElementById('btn-adm').classList.remove('hidden');
-                carregarConteudo();
+                carregarDados();
             } else { auth.signOut(); }
         } else {
-            // Redirecionar para login se necessário
             document.getElementById('app-screen').classList.add('hidden');
+            document.getElementById('auth-screen').classList.remove('hidden');
         }
-        document.getElementById('loader').classList.add('hidden');
     });
 
-    function carregarConteudo() {
-        db.ref('catalog').on('value', snap => {
-            dadosMidia = [];
-            const rFav = document.getElementById('row-fav'), rMov = document.getElementById('row-movies-list'), rSer = document.getElementById('row-series-list');
-            rFav.innerHTML = ""; rMov.innerHTML = ""; rSer.innerHTML = "";
+    async function logar() {
+        const e = document.getElementById('email').value, p = document.getElementById('pass').value;
+        if(!e || !p) return alert("Preencha os campos!");
+        try { await auth.signInWithEmailAndPassword(e, p); } catch(e) { alert("Erro de login!"); }
+    }
 
-            snap.forEach(child => {
-                const m = child.val();
-                dadosMidia.push(m);
+    function carregarDados() {
+        db.ref('catalog').on('value', snap => {
+            listaTotal = [];
+            const rM = document.getElementById('row-movies'), rS = document.getElementById('row-series');
+            rM.innerHTML = ""; rS.innerHTML = "";
+            snap.forEach(c => {
+                const m = c.val(); m.key = c.key;
+                listaTotal.push(m);
                 const card = document.createElement('div');
                 card.className = 'card'; card.style.backgroundImage = `url(${m.img})`;
-                card.onclick = () => {
-                    midiaAtiva = m;
-                    document.getElementById('det-title').innerText = m.title;
-                    document.getElementById('det-text').innerText = m.sinopse || "Sem descrição disponível.";
-                    document.getElementById('vid-preview').innerHTML = `<video autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;"><source src="${m.video}"></video>`;
-                    document.getElementById('det-modal').style.display = 'flex';
-                };
-
-                if(m.type === 'movie') rMov.appendChild(card); else rSer.appendChild(card);
-                if(dadosMidia.length <= 8) rFav.appendChild(card.cloneNode(true)).onclick = card.onclick;
+                card.onclick = () => abrirModal(m);
+                if(m.type === 'movie') rM.appendChild(card); else rS.appendChild(card);
             });
         });
     }
 
-    function buscar() {
-        const t = document.getElementById('search').value.toLowerCase();
-        const areaNormal = document.getElementById('area-normal'), areaBusca = document.getElementById('area-busca'), gridBusca = document.getElementById('grid-busca');
-        
-        if(t.length > 0) {
-            areaNormal.classList.add('hidden'); areaBusca.classList.remove('hidden');
-            gridBusca.innerHTML = "";
-            dadosMidia.forEach(m => {
-                if(m.title.toLowerCase().includes(t)) {
-                    const card = document.createElement('div');
-                    card.className = 'card'; card.style.backgroundImage = `url(${m.img})`;
-                    card.onclick = () => { midiaAtiva = m; abrirDetDireto(); };
-                    gridBusca.appendChild(card);
-                }
-            });
-        } else {
-            areaNormal.classList.remove('hidden'); areaBusca.classList.add('hidden');
-        }
+    function abrirModal(m) {
+        midiaSelecionada = m;
+        document.getElementById('det-titulo').innerText = m.title;
+        document.getElementById('det-sinopse').innerText = m.sinopse || "Sem sinopse.";
+        document.getElementById('preview-video').innerHTML = `<video autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;"><source src="${m.video}"></video>`;
+        document.getElementById('modal-det').style.display = 'flex';
     }
 
-    function abrirDetDireto() {
-        document.getElementById('det-title').innerText = midiaAtiva.title;
-        document.getElementById('det-text').innerText = midiaAtiva.sinopse || "";
-        document.getElementById('vid-preview').innerHTML = `<video autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;"><source src="${midiaAtiva.video}"></video>`;
-        document.getElementById('det-modal').style.display = 'flex';
-    }
+    function fecharModal() { document.getElementById('modal-det').style.display = 'none'; document.getElementById('preview-video').innerHTML = ""; }
 
-    function fecharDet() { document.getElementById('det-modal').style.display = 'none'; document.getElementById('vid-preview').innerHTML = ""; }
-    
-    function abrirPlayer() {
-        fecharDet();
-        document.getElementById('player-cont').innerHTML = `<video controls autoplay playsinline style="width:100%;height:100%;"><source src="${midiaAtiva.video}"></video>`;
+    function play() {
+        fecharModal();
+        document.getElementById('player-cont').innerHTML = `<video controls autoplay playsinline style="width:100%;height:100%;"><source src="${midiaSelecionada.video}"></video>`;
         document.getElementById('player-overlay').style.display = 'block';
     }
 
-    function fecharPlayer() { 
-        document.getElementById('player-overlay').style.display = 'none'; 
-        document.getElementById('player-cont').innerHTML = ""; 
-        document.body.classList.remove('lights-off'); 
+    function fecharPlayer() {
+        document.getElementById('player-overlay').style.display = 'none';
+        document.getElementById('player-cont').innerHTML = "";
+        document.body.classList.remove('lights-off');
     }
 
-    function toggleMenu() { 
-        document.getElementById('sidebar').classList.toggle('open'); 
-        document.getElementById('sidebar-overlay').style.display = document.getElementById('sidebar').classList.contains('open') ? 'block' : 'none'; 
-    }
-
-    function scrollToRow(id) { 
-        const el = document.getElementById(id);
-        const y = el.getBoundingClientRect().top + window.pageYOffset - 100;
-        window.scrollTo({top: y, behavior: 'smooth'});
-        toggleMenu(); 
-    }
-
-    function toggleAdm() { 
-        document.getElementById('adm-view').classList.toggle('hidden'); 
+    function toggleAdm() {
+        document.getElementById('adm-view').classList.toggle('hidden');
         db.ref('users').once('value', snap => {
-            const list = document.getElementById('user-list'); list.innerHTML = "";
-            snap.forEach(u => {
-                const val = u.val();
-                list.innerHTML += `<div style="padding:5px; border-bottom:1px solid #333; font-size:12px;">
-                    <span style="color:gold">${val.role}</span> | ${val.email} 
-                    <a href="https://wa.me/55${val.phone}" style="color:lawngreen; float:right;">ZAP</a>
-                </div>`;
-            });
+            const l = document.getElementById('user-list'); l.innerHTML = "";
+            snap.forEach(u => { l.innerHTML += `<div>${u.val().role} | ${u.val().email}</div>`; });
         });
     }
 
-    async function addMidia() {
-        const id = document.getElementById('m-id').value, type = document.getElementById('m-type').value, url = document.getElementById('m-url').value;
-        const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=2eaf2fd731f81a77741ecb625b588a40&language=pt-BR`);
+    async function postar() {
+        const id = document.getElementById('m-id').value, url = document.getElementById('m-url').value;
+        const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=2eaf2fd731f81a77741ecb625b588a40&language=pt-BR`);
         const d = await res.json();
-        await db.ref('catalog').push({ title: d.title || d.name, img: `https://image.tmdb.org/t/p/w500${d.poster_path}`, video: url, type: type, sinopse: d.overview });
-        alert("Publicado com sucesso!");
+        await db.ref('catalog').push({ title: d.title, img: `https://image.tmdb.org/t/p/w500${d.poster_path}`, video: url, type: 'movie', sinopse: d.overview });
+        alert("OK!");
     }
 </script>
 </body>
