@@ -1,4 +1,3 @@
-// --- CONFIGURAÇÃO FIREBASE ---
 const firebaseConfig = {
     apiKey: "AIzaSyCzxrJMumx3lbjsOXv9JHdXrn29jUg3x_0",
     authDomain: "outflix-9e57d.firebaseapp.com",
@@ -6,118 +5,68 @@ const firebaseConfig = {
     databaseURL: "https://outflix-9e57d-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
 
-// Inicialização segura
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const auth = firebase.auth();
+const db = firebase.database(), auth = firebase.auth();
 
 let allMedia = [], currentUser = null, activeMedia = null;
 
-// --- SISTEMA DE TRADUÇÃO DE ERROS ---
+// TRADUTOR DE ERROS
 function traduzirErro(code) {
-    switch (code) {
-        case 'auth/email-already-in-use': return "⚠️ Este e-mail já está em uso por outra conta.";
-        case 'auth/wrong-password': return "🔑 Senha incorreta. Tente novamente.";
-        case 'auth/user-not-found': return "👤 Usuário não encontrado. Verifique o e-mail.";
-        case 'auth/weak-password': return "🔒 Senha muito fraca. Use pelo menos 6 caracteres.";
-        case 'auth/invalid-email': return "📧 O formato do e-mail é inválido.";
-        case 'auth/network-request-failed': return "📡 Falha na conexão. Verifique sua internet.";
-        default: return "❌ Ocorreu um erro: " + code;
-    }
+    const erros = {
+        'auth/email-already-in-use': "⚠️ E-mail já cadastrado.",
+        'auth/wrong-password': "🔑 Senha incorreta.",
+        'auth/user-disabled': "🚫 Sua conta foi BLOQUEADA pelo administrador.",
+        'auth/user-not-found': "👤 Usuário inexistente."
+    };
+    return erros[code] || "❌ Erro: " + code;
 }
 
-// --- INTERFACE DO USUÁRIO (UI) ---
 const ui = {
-    toggleLoader: (show) => {
-        const loader = document.getElementById('loader-screen');
-        if (show) {
-            loader.classList.remove('hidden');
-            loader.style.opacity = '1';
-        } else {
-            loader.style.opacity = '0';
-            setTimeout(() => loader.classList.add('hidden'), 500);
-        }
-    },
-
-    toggleAuth: (mode) => {
-        document.getElementById('form-login').classList.toggle('hidden', mode === 'register');
-        document.getElementById('form-register').classList.toggle('hidden', mode === 'login');
-    },
-
-    // CORREÇÃO DA ABA LATERAL
+    toggleLoader: (s) => document.getElementById('loader-screen').classList.toggle('hidden', !s),
     toggleSidebar: () => {
-        const sb = document.getElementById('sidebar');
-        const overlay = document.getElementById('sidebar-overlay');
-        
-        sb.classList.toggle('open');
-        
-        if (sb.classList.contains('open')) {
-            overlay.style.display = 'block';
-        } else {
-            overlay.style.display = 'none';
-        }
+        const s = document.getElementById('sidebar'), o = document.getElementById('sidebar-overlay');
+        s.classList.toggle('open');
+        o.style.display = s.classList.contains('open') ? 'block' : 'none';
     },
-
-    openModal: (media) => {
-        activeMedia = media;
-        document.getElementById('modal-title').innerText = media.title;
-        document.getElementById('modal-sinopse').innerText = media.sinopse || "Sem descrição disponível.";
-        document.getElementById('modal-video-preview').innerHTML = `
-            <video autoplay muted loop playsinline style="width:100%; height:100%; object-fit:cover;">
-                <source src="${media.video}">
-            </video>`;
-        document.getElementById('modal-details').classList.remove('hidden');
+    toggleAdmin: () => {
+        document.getElementById('admin-panel').classList.toggle('hidden');
+        app.loadUsersList();
     },
-
-    closeModal: () => {
-        document.getElementById('modal-details').classList.add('hidden');
-        document.getElementById('modal-video-preview').innerHTML = "";
+    switchAdminTab: (tab) => {
+        document.getElementById('tab-media').classList.toggle('hidden', tab !== 'media');
+        document.getElementById('tab-users').classList.toggle('hidden', tab !== 'users');
     },
-
+    closeModal: () => document.getElementById('modal-details').classList.add('hidden'),
     startPlayer: () => {
         ui.closeModal();
         document.getElementById('player-overlay').classList.remove('hidden');
-        document.getElementById('video-container').innerHTML = `
-            <video controls autoplay style="width:100%; height:100%;">
-                <source src="${activeMedia.video}" type="video/mp4">
-            </video>`;
-    },
-
-    closePlayer: () => {
-        document.getElementById('player-overlay').classList.add('hidden');
-        document.getElementById('video-container').innerHTML = "";
+        document.getElementById('video-container').innerHTML = `<video controls autoplay src="${activeMedia.video}"></video>`;
     }
 };
 
-// --- LÓGICA DO APLICATIVO ---
 const app = {
     init: () => {
-        // Previne tela preta infinita
-        setTimeout(() => ui.toggleLoader(false), 5000);
-
         auth.onAuthStateChanged(async (user) => {
             if (user) {
-                try {
-                    const snap = await db.ref('users/' + user.uid).once('value');
-                    currentUser = snap.val();
-                    app.showApp();
-                } catch (e) {
-                    console.error("Erro ao carregar usuário:", e);
-                    app.showApp();
+                const snap = await db.ref('users/' + user.uid).once('value');
+                currentUser = snap.val();
+                if(currentUser?.blocked) { 
+                    alert("CONTA BLOQUEADA!"); 
+                    auth.signOut(); 
+                    return; 
                 }
-            } else {
-                app.showAuth();
-            }
+                currentUser.uid = user.uid;
+                app.showApp();
+                // Marca como online
+                db.ref('users/' + user.uid).update({ lastSeen: Date.now(), online: true });
+            } else app.showAuth();
         });
     },
 
     showApp: () => {
         document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('app-screen').classList.remove('hidden');
-        if (currentUser?.role === 'admin') {
-            document.getElementById('btn-admin-panel').classList.remove('hidden');
-        }
-        ui.toggleLoader(false);
+        if(currentUser?.role === 'admin') document.getElementById('btn-admin-panel').classList.remove('hidden');
         app.loadCatalog();
     },
 
@@ -127,99 +76,125 @@ const app = {
         ui.toggleLoader(false);
     },
 
-    login: async () => {
-        const e = document.getElementById('login-email').value;
-        const p = document.getElementById('login-pass').value;
-        if (!e || !p) return alert("Por favor, preencha todos os campos.");
-
-        ui.toggleLoader(true);
-        try {
-            await auth.signInWithEmailAndPassword(e, p);
-        } catch (err) {
-            ui.toggleLoader(false);
-            alert(traduzirErro(err.code));
-        }
-    },
-
-    register: async () => {
-        const e = document.getElementById('reg-email').value;
-        const p = document.getElementById('reg-pass').value;
-        if (!e || !p) return alert("Preencha e-mail e senha.");
-
-        ui.toggleLoader(true);
-        try {
-            const res = await auth.createUserWithEmailAndPassword(e, p);
-            await db.ref('users/' + res.user.uid).set({
-                email: e,
-                role: 'user',
-                createdAt: new Date().toISOString()
-            });
-            location.reload();
-        } catch (err) {
-            ui.toggleLoader(false);
-            alert(traduzirErro(err.code));
-        }
-    },
-
-    logout: () => auth.signOut().then(() => location.reload()),
-
-    loadCatalog: () => {
-        db.ref('catalog').on('value', snap => {
-            const rMov = document.getElementById('row-movies');
-            const rSer = document.getElementById('row-series');
-            const rFeat = document.getElementById('row-featured');
-            
-            if(rMov) rMov.innerHTML = "";
-            if(rSer) rSer.innerHTML = "";
-            if(rFeat) rFeat.innerHTML = "";
-
-            allMedia = [];
-            snap.forEach(i => {
-                const m = i.val();
-                m.key = i.key;
-                allMedia.push(m);
-                
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.style.backgroundImage = `url(${m.img})`;
-                card.onclick = () => ui.openModal(m);
-
-                if (m.type === 'movie' && rMov) rMov.appendChild(card);
-                else if (rSer) rSer.appendChild(card);
-
-                if (rFeat && allMedia.length <= 6) {
-                    const clone = card.cloneNode(true);
-                    clone.onclick = () => ui.openModal(m);
-                    rFeat.appendChild(clone);
-                }
+    // --- GESTÃO DE USUÁRIOS (ADM) ---
+    loadUsersList: () => {
+        db.ref('users').on('value', snap => {
+            const container = document.getElementById('users-list');
+            container.innerHTML = "<h4>Usuários Cadastrados:</h4>";
+            snap.forEach(u => {
+                const user = u.val();
+                const isOnline = (Date.now() - user.lastSeen) < 60000;
+                container.innerHTML += `
+                    <div class="user-card">
+                        <div>
+                            <b>${user.email}</b> ${isOnline ? '<span class="status-online">● Online</span>' : ''}
+                            <br><small>Papel: ${user.role}</small>
+                        </div>
+                        <div>
+                            <button class="btn-block" onclick="app.toggleBlockUser('${u.key}', ${user.blocked})">
+                                ${user.blocked ? 'Desbloquear' : 'Bloquear'}
+                            </button>
+                            <button class="btn-del" onclick="app.deleteUser('${u.key}')">Excluir</button>
+                        </div>
+                    </div>
+                `;
             });
         });
     },
 
-    search: () => {
-        const query = document.getElementById('search-input').value.toLowerCase();
-        const grid = document.getElementById('search-grid');
-        const resultsArea = document.getElementById('search-results-area');
-        const catalogArea = document.getElementById('catalog-area');
+    toggleBlockUser: (uid, currentStatus) => {
+        db.ref('users/' + uid).update({ blocked: !currentStatus });
+    },
 
-        if (query.length > 2) {
-            catalogArea.classList.add('hidden');
-            resultsArea.classList.remove('hidden');
-            grid.innerHTML = "";
-            allMedia.forEach(m => {
-                if (m.title.toLowerCase().includes(query)) {
-                    const card = document.createElement('div');
-                    card.className = 'card';
-                    card.style.backgroundImage = `url(${m.img})`;
-                    card.onclick = () => ui.openModal(m);
-                    grid.appendChild(card);
-                }
+    deleteUser: (uid) => {
+        if(confirm("Deseja realmente excluir este usuário?")) db.ref('users/' + uid).remove();
+    },
+
+    // --- CATÁLOGO E CATEGORIAS ---
+    loadCatalog: () => {
+        db.ref('catalog').on('value', snap => {
+            allMedia = [];
+            const area = document.getElementById('catalog-area');
+            area.innerHTML = "";
+            const cats = {};
+
+            snap.forEach(i => {
+                const m = i.val(); m.key = i.key;
+                allMedia.push(m);
+                if(!cats[m.category]) cats[m.category] = [];
+                cats[m.category].push(m);
             });
-        } else {
-            catalogArea.classList.remove('hidden');
-            resultsArea.classList.add('hidden');
-        }
-    }
+
+            // Cria Seções Automáticas
+            for(let cat in cats) {
+                const h2 = document.createElement('h2'); h2.innerText = cat; h2.className = "section-title";
+                const row = document.createElement('div'); row.className = "carousel-cards";
+                cats[cat].forEach(m => {
+                    const card = document.createElement('div');
+                    card.className = "card"; card.style.backgroundImage = `url(${m.img})`;
+                    card.onclick = () => app.openDetails(m);
+                    row.appendChild(card);
+                });
+                area.appendChild(h2); area.appendChild(row);
+            }
+            app.updateMenu(Object.keys(cats));
+        });
+    },
+
+    updateMenu: (categories) => {
+        const menu = document.querySelector('.menu-list');
+        const fixos = `
+            <li onclick="location.reload()"><i class="fas fa-home"></i> Início</li>
+            <li onclick="app.filter('Favoritos')"><i class="fas fa-heart"></i> Favoritos</li>
+        `;
+        const dinamicos = categories.map(c => `<li onclick="app.filter('${c}')"><i class="fas fa-play-circle"></i> ${c}</li>`).join('');
+        menu.innerHTML = fixos + dinamicos + `<li onclick="app.logout()"><i class="fas fa-sign-out-alt"></i> Sair</li>`;
+    },
+
+    postContent: async () => {
+        const id = document.getElementById('tmdb-id').value;
+        const manualCat = document.getElementById('manual-cat').value;
+        const url = document.getElementById('video-url').value;
+
+        const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=2eaf2fd731f81a77741ecb625b588a40&language=pt-BR`);
+        const d = await res.json();
+
+        const categoriaFinal = manualCat || (d.genres ? d.genres[0].name : "Geral");
+
+        db.ref('catalog').push({
+            title: d.title || d.name,
+            img: `https://image.tmdb.org/t/p/w500${d.poster_path}`,
+            sinopse: d.overview,
+            video: url,
+            category: categoriaFinal,
+            rating: d.vote_average
+        });
+        alert("Publicado em: " + categoriaFinal);
+    },
+
+    openDetails: (m) => {
+        activeMedia = m;
+        document.getElementById('modal-title').innerText = m.title;
+        document.getElementById('modal-sinopse').innerText = m.sinopse;
+        document.getElementById('modal-video-preview').innerHTML = `<video autoplay muted loop playsinline src="${m.video}"></video>`;
+        document.getElementById('modal-details').classList.remove('hidden');
+    },
+
+    login: async () => {
+        const e = document.getElementById('login-email').value, p = document.getElementById('login-pass').value;
+        try { await auth.signInWithEmailAndPassword(e, p); } catch(e) { alert(traduzirErro(e.code)); }
+    },
+
+    register: async () => {
+        const e = document.getElementById('reg-email').value, p = document.getElementById('reg-pass').value;
+        try {
+            const res = await auth.createUserWithEmailAndPassword(e, p);
+            await db.ref('users/' + res.user.uid).set({ email: e, role: 'user', blocked: false, lastSeen: Date.now() });
+            location.reload();
+        } catch(e) { alert(traduzirErro(e.code)); }
+    },
+
+    logout: () => auth.signOut().then(() => location.reload())
 };
 
 window.onload = app.init;
