@@ -1,76 +1,88 @@
-/* ARQUIVO DE CORREÇÃO MASTER FLIX */
+/* ARQUIVO DE CORREÇÃO MASTER FLIX - VERSÃO FINAL */
 
-/* Impede que o header atropele o conteúdo */
+/* 1. HEADER E LAYOUT */
 header {
     background: rgba(0,0,0,0.95) !important;
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
     padding: 10px 5% !important;
-    flex-wrap: wrap !important;
-    height: auto !important;
-    min-height: 70px;
+    z-index: 1000 !important;
 }
 
-.header-left {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.header-right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-/* Busca responsiva */
-#search-input {
-    max-width: 150px;
-    transition: 0.3s;
-}
-
-#search-input:focus {
-    max-width: 250px;
-}
-
-/* Ajuste da Sidebar para não cobrir o logo */
+/* 2. SIDEBAR E SISTEMA DE FECHAR AO CLICAR FORA */
 #sidebar {
-    padding-top: 90px !important;
-    background: #050505 !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: -280px !important;
+    width: 260px !important;
+    height: 100% !important;
+    background: #0d0d0d !important;
+    z-index: 3000 !important;
+    transition: left 0.4s ease !important;
+    display: flex !important;
+    flex-direction: column !important; /* Permite empurrar itens para o fim */
+    padding: 20px 0 !important;
 }
 
-/* Ajuste dos cards para não ficarem distorcidos */
+#sidebar.open {
+    left: 0 !important;
+}
+
+/* O Overlay agora é o segredo para sair ao clicar fora */
+#sidebar-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    background: rgba(0,0,0,0.8) !important;
+    z-index: 2500 !important;
+    display: none; /* Ativado via JS pelo ui.toggleSidebar */
+    backdrop-filter: blur(4px); /* Efeito de desfoque no fundo */
+}
+
+/* 3. POSICIONAMENTO ESTRATÉGICO DOS BOTÕES */
+.menu-list {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+}
+
+/* Botões normais no topo */
+.menu-list li {
+    padding: 15px 25px !important;
+    font-size: 16px !important;
+    cursor: pointer !important;
+    transition: 0.3s !important;
+}
+
+/* Empurra os botões Início e Sair para o RODAPÉ da aba */
+.menu-list li:first-child { margin-top: 20px !important; }
+
+/* Local Estratégico: O "Sair" fica isolado no final */
+.menu-list li:last-child {
+    margin-top: auto !important; 
+    border-top: 1px solid #333 !important;
+    color: #ff4444 !important; /* Cor de destaque para sair */
+}
+
+.menu-list li:hover {
+    background: rgba(255,255,255,0.1) !important;
+}
+
+/* 4. AJUSTES GERAIS E RESPONSIVIDADE */
 .card {
     width: 130px !important;
     height: 190px !important;
     border-radius: 8px !important;
-    flex-shrink: 0;
 }
 
-/* RESPONSIVIDADE PARA CELULAR */
 @media (max-width: 768px) {
-    header {
-        padding: 10px !important;
-    }
-    .logo { font-size: 1.2rem !important; }
-    #search-input { max-width: 100px; }
-    
-    .modal-content {
-        flex-direction: column !important;
-        height: auto !important;
-        max-height: 95vh;
-    }
-    #modal-video-preview { width: 100% !important; height: 200px !important; }
+    .modal-content { flex-direction: column !important; }
+    #search-input { max-width: 100px !important; }
 }
 
-/* RESPONSIVIDADE PARA COMPUTADOR */
 @media (min-width: 1024px) {
-    .card {
-        width: 180px !important;
-        height: 260px !important;
-    }
-    .content-area {
-        padding: 100px 5% 40px !important;
-    }
+    .card { width: 190px !important; height: 280px !important; }
 }
