@@ -4,202 +4,160 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MASTER FLIX PRO</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
-
-    <style>
-        :root { --red: #e50914; --black: #141414; --gold: #ffc107; }
-        body { background: var(--black); color: white; font-family: Arial, sans-serif; margin: 0; overflow-x: hidden; }
-        .hidden { display: none !important; }
-        
-        /* LOADER */
-        #loader { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 10000; }
-        
-        /* LOGIN BOX */
-        .auth-screen { height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
-        .auth-box { background: #111; padding: 30px; border-radius: 8px; width: 100%; max-width: 400px; border: 1px solid #333; text-align: center; }
-        input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; }
-        .btn-red { background: var(--red); color: white; border: none; padding: 14px; width: 100%; font-weight: bold; cursor: pointer; border-radius: 4px; font-size: 16px; }
-
-        /* HEADER */
-        header { background: #000; padding: 10px 4%; display: flex; justify-content: space-between; align-items: center; position: fixed; width: 100%; top: 0; z-index: 1000; box-sizing: border-box; }
-        .logo { color: var(--red); font-weight: bold; font-size: 1.5rem; }
-
-        /* CONTENT */
-        .content { padding: 80px 4% 40px; }
-        .row-title { font-size: 1.2rem; margin: 20px 0 10px; font-weight: bold; }
-        .row-cards { display: flex; overflow-x: auto; gap: 10px; padding-bottom: 10px; scrollbar-width: none; }
-        .row-cards::-webkit-scrollbar { display: none; }
-        .card { min-width: 140px; height: 210px; background-size: cover; background-position: center; border-radius: 4px; cursor: pointer; transition: 0.3s; flex-shrink: 0; }
-        .card:hover { transform: scale(1.05); }
-
-        /* MODAL */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; display: none; align-items: center; justify-content: center; padding: 10px; }
-        .modal-content { background: #181818; width: 100%; max-width: 800px; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; }
-        .modal-video { width: 100%; height: 250px; background: #000; }
-        .modal-info { padding: 20px; }
-
-        @media (min-width: 768px) {
-            .modal-content { flex-direction: row; height: 450px; }
-            .modal-video { width: 60%; height: 100%; }
-            .modal-info { width: 40%; }
-            .card { min-width: 180px; height: 270px; }
-        }
-
-        /* PLAYER OVERLAY */
-        #player-overlay { position: fixed; inset: 0; background: #000; z-index: 6000; display: none; }
-        .lights-off header, .lights-off .content { opacity: 0; pointer-events: none; }
-    </style>
 </head>
 <body>
 
-    <div id="loader"><h1>MASTER FLIX...</h1></div>
-
-    <div id="auth-screen" class="auth-screen hidden">
-        <div class="auth-box">
-            <h1 style="color:var(--red)">LOGIN</h1>
-            <input type="email" id="email" placeholder="Seu E-mail">
-            <input type="password" id="pass" placeholder="Sua Senha">
-            <button class="btn-red" onclick="logar()">ENTRAR NO MASTER FLIX</button>
+    <div id="loader-screen">
+        <div class="loader-content">
+            <h1 class="logo-anim">MASTER FLIX</h1>
+            <div class="spinner"></div>
         </div>
     </div>
 
-    <div id="app-screen" class="hidden">
-        <header>
-            <div class="logo">MASTER FLIX</div>
-            <div style="display:flex; gap:10px;">
-                <input type="text" id="search" style="padding:5px; border-radius:4px; border:none; width:100px;" placeholder="Busca..." onkeyup="buscar()">
-                <button id="btn-adm" class="hidden" onclick="toggleAdm()" style="background:var(--gold); border:none; padding:5px 10px; border-radius:4px; font-weight:bold; cursor:pointer;">ADM</button>
-                <button onclick="auth.signOut()" style="background:none; border:1px solid #444; color:white; cursor:pointer; padding:5px 10px; border-radius:4px;">Sair</button>
+    <div id="auth-screen" class="screen hidden">
+        <div class="auth-container">
+            <div class="auth-box">
+                <h1 style="color:var(--red); margin-bottom: 20px;">MASTER FLIX</h1>
+                
+                <div id="form-login">
+                    <input type="email" id="login-email" placeholder="E-mail ou Usuário">
+                    <input type="password" id="login-pass" placeholder="Senha">
+                    <button class="btn-primary" onclick="app.login()">ENTRAR</button>
+                    <p class="toggle-text" onclick="ui.toggleAuth('register')">Novo por aqui? <b>Assine agora.</b></p>
+                </div>
+
+                <div id="form-register" class="hidden">
+                    <input type="email" id="reg-email" placeholder="Seu melhor E-mail">
+                    <input type="password" id="reg-pass" placeholder="Crie uma Senha">
+                    <div class="row-inputs">
+                        <input type="text" id="reg-phone" placeholder="WhatsApp (DDD+Num)">
+                    </div>
+                    <input type="text" id="reg-addr" placeholder="Endereço Completo">
+                    <button class="btn-primary" onclick="app.register()">CRIAR CONTA</button>
+                    <p class="toggle-text" onclick="ui.toggleAuth('login')">Já tem conta? <b>Entrar.</b></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-screen" class="screen hidden">
+        
+        <header id="main-header">
+            <div class="header-left">
+                <button class="icon-btn" onclick="ui.toggleSidebar()"><i class="fas fa-bars"></i></button>
+                <span class="logo">MASTER FLIX</span>
+            </div>
+            
+            <div class="header-right">
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="search-input" placeholder="Títulos, gente e gêneros" onkeyup="app.search()">
+                </div>
+                <button id="btn-admin-panel" class="icon-btn hidden" onclick="ui.toggleAdmin()" title="Painel Master"><i class="fas fa-crown" style="color:gold"></i></button>
             </div>
         </header>
 
-        <main class="content">
-            <div id="adm-view" class="hidden" style="background:#222; padding:15px; border-radius:8px; margin-bottom:20px; border:1px solid var(--gold);">
-                <h2 style="color:var(--gold)">Painel Master</h2>
-                <input type="text" id="m-id" placeholder="ID TMDB">
-                <input type="text" id="m-url" placeholder="URL Vídeo (MP4)">
-                <button class="btn-red" onclick="postar()">POSTAR AGORA</button>
-                <div id="user-list" style="margin-top:15px; font-size:12px;"></div>
+        <div id="sidebar-overlay" onclick="ui.toggleSidebar()"></div>
+        <nav id="sidebar">
+            <div class="sidebar-header">
+                <span class="logo">MENU</span>
+            </div>
+            <ul class="menu-list">
+                <li onclick="ui.scrollTo('featured-section')"><i class="fas fa-fire"></i> Em Alta</li>
+                <li onclick="ui.scrollTo('movies-section')"><i class="fas fa-film"></i> Filmes</li>
+                <li onclick="ui.scrollTo('series-section')"><i class="fas fa-tv"></i> Séries</li>
+                <li onclick="app.logout()" style="color: #666; margin-top: 20px;"><i class="fas fa-sign-out-alt"></i> Sair</li>
+            </ul>
+        </nav>
+
+        <main class="content-area">
+            
+            <div id="admin-panel" class="admin-box hidden">
+                <div class="admin-header">
+                    <h3><i class="fas fa-user-shield"></i> PAINEL MASTER</h3>
+                    <button onclick="ui.toggleAdmin()" class="close-btn">✕</button>
+                </div>
+                
+                <div class="admin-grid">
+                    <div class="admin-col">
+                        <h4>Clientes & Acessos</h4>
+                        <div id="users-list-container" class="users-list">Carregando...</div>
+                    </div>
+
+                    <div class="admin-col">
+                        <h4>Adicionar Conteúdo (TMDB)</h4>
+                        <input type="text" id="tmdb-id" placeholder="ID do TMDB (Ex: 550)">
+                        <select id="tmdb-type">
+                            <option value="movie">Filme</option>
+                            <option value="tv">Série</option>
+                        </select>
+                        <input type="text" id="video-url" placeholder="URL do Vídeo (.mp4)">
+                        <button class="btn-gold" onclick="app.postContent()">PUBLICAR</button>
+                    </div>
+                </div>
             </div>
 
-            <div id="area-normal">
-                <div class="row-title">Lançamentos</div>
-                <div id="row-movies" class="row-cards"></div>
-                <div class="row-title">Séries</div>
-                <div id="row-series" class="row-cards"></div>
+            <div id="search-results-area" class="hidden">
+                <h2 class="section-title">Resultados da Busca</h2>
+                <div id="search-grid" class="grid-cards"></div>
             </div>
+
+            <div id="catalog-area">
+                <section id="featured-section">
+                    <h2 class="section-title">🔥 Mais Assistidos</h2>
+                    <div id="row-featured" class="carousel-cards"></div>
+                </section>
+
+                <section id="movies-section">
+                    <h2 class="section-title">🎬 Filmes</h2>
+                    <div id="row-movies" class="carousel-cards"></div>
+                </section>
+
+                <section id="series-section">
+                    <h2 class="section-title">📺 Séries</h2>
+                    <div id="row-series" class="carousel-cards"></div>
+                </section>
+            </div>
+
         </main>
     </div>
 
-    <div id="modal-det" class="modal" onclick="fecharModal()">
+    <div id="modal-details" class="modal-overlay hidden" onclick="ui.closeModal()">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-video" id="preview-video"></div>
+            <div class="modal-media">
+                <div id="modal-video-preview"></div>
+                <div class="modal-gradient"></div>
+                <button class="btn-close-modal" onclick="ui.closeModal()">✕</button>
+            </div>
             <div class="modal-info">
-                <h2 id="det-titulo"></h2>
-                <p id="det-sinopse" style="color:#aaa; font-size:14px; height:150px; overflow-y:auto;"></p>
-                <button class="btn-red" onclick="play()">ASSISTIR AGORA</button>
+                <h1 id="modal-title">Título do Filme</h1>
+                <div class="modal-meta">
+                    <span id="modal-badge" class="badge-hd">HD</span>
+                    <span style="color:#46d369">98% Relevante</span>
+                </div>
+                <p id="modal-sinopse">Descrição do filme...</p>
+                <div class="modal-actions">
+                    <button class="btn-watch" onclick="app.startPlayer()"><i class="fas fa-play"></i> ASSISTIR</button>
+                    <button class="btn-secondary">Minha Lista</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="player-overlay">
-        <div style="position:absolute; top:20px; right:20px; z-index:7000; display:flex; gap:10px;">
-            <button onclick="document.body.classList.toggle('lights-off')" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:10px; border-radius:50%; cursor:pointer;">💡</button>
-            <button onclick="fecharPlayer()" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:10px; border-radius:50%; cursor:pointer;">✕</button>
+    <div id="player-overlay" class="player-overlay hidden">
+        <div class="player-controls-top">
+            <button class="ctrl-btn" onclick="ui.toggleLights()" title="Apagar Luzes"><i class="fas fa-lightbulb"></i></button>
+            <button class="ctrl-btn" onclick="ui.closePlayer()" title="Fechar"><i class="fas fa-times"></i></button>
         </div>
-        <div id="player-cont" style="width:100%; height:100%;"></div>
+        <div id="video-container" class="video-container"></div>
     </div>
 
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyCzxrJMumx3lbjsOXv9JHdXrn29jUg3x_0",
-        authDomain: "outflix-9e57d.firebaseapp.com",
-        projectId: "outflix-9e57d",
-        databaseURL: "https://outflix-9e57d-default-rtdb.asia-southeast1.firebasedatabase.app"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database(), auth = firebase.auth();
-    let listaTotal = [], midiaSelecionada = null;
-
-    // CONTROLE DE ACESSO
-    auth.onAuthStateChanged(async user => {
-        document.getElementById('loader').classList.add('hidden');
-        if (user) {
-            const snap = await db.ref('users/' + user.uid).once('value');
-            const u = snap.val();
-            if (u) {
-                document.getElementById('auth-screen').classList.add('hidden');
-                document.getElementById('app-screen').classList.remove('hidden');
-                if(u.role === 'admin') document.getElementById('btn-adm').classList.remove('hidden');
-                carregarDados();
-            } else { auth.signOut(); }
-        } else {
-            document.getElementById('app-screen').classList.add('hidden');
-            document.getElementById('auth-screen').classList.remove('hidden');
-        }
-    });
-
-    async function logar() {
-        const e = document.getElementById('email').value, p = document.getElementById('pass').value;
-        if(!e || !p) return alert("Preencha os campos!");
-        try { await auth.signInWithEmailAndPassword(e, p); } catch(e) { alert("Erro de login!"); }
-    }
-
-    function carregarDados() {
-        db.ref('catalog').on('value', snap => {
-            listaTotal = [];
-            const rM = document.getElementById('row-movies'), rS = document.getElementById('row-series');
-            rM.innerHTML = ""; rS.innerHTML = "";
-            snap.forEach(c => {
-                const m = c.val(); m.key = c.key;
-                listaTotal.push(m);
-                const card = document.createElement('div');
-                card.className = 'card'; card.style.backgroundImage = `url(${m.img})`;
-                card.onclick = () => abrirModal(m);
-                if(m.type === 'movie') rM.appendChild(card); else rS.appendChild(card);
-            });
-        });
-    }
-
-    function abrirModal(m) {
-        midiaSelecionada = m;
-        document.getElementById('det-titulo').innerText = m.title;
-        document.getElementById('det-sinopse').innerText = m.sinopse || "Sem sinopse.";
-        document.getElementById('preview-video').innerHTML = `<video autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;"><source src="${m.video}"></video>`;
-        document.getElementById('modal-det').style.display = 'flex';
-    }
-
-    function fecharModal() { document.getElementById('modal-det').style.display = 'none'; document.getElementById('preview-video').innerHTML = ""; }
-
-    function play() {
-        fecharModal();
-        document.getElementById('player-cont').innerHTML = `<video controls autoplay playsinline style="width:100%;height:100%;"><source src="${midiaSelecionada.video}"></video>`;
-        document.getElementById('player-overlay').style.display = 'block';
-    }
-
-    function fecharPlayer() {
-        document.getElementById('player-overlay').style.display = 'none';
-        document.getElementById('player-cont').innerHTML = "";
-        document.body.classList.remove('lights-off');
-    }
-
-    function toggleAdm() {
-        document.getElementById('adm-view').classList.toggle('hidden');
-        db.ref('users').once('value', snap => {
-            const l = document.getElementById('user-list'); l.innerHTML = "";
-            snap.forEach(u => { l.innerHTML += `<div>${u.val().role} | ${u.val().email}</div>`; });
-        });
-    }
-
-    async function postar() {
-        const id = document.getElementById('m-id').value, url = document.getElementById('m-url').value;
-        const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=2eaf2fd731f81a77741ecb625b588a40&language=pt-BR`);
-        const d = await res.json();
-        await db.ref('catalog').push({ title: d.title, img: `https://image.tmdb.org/t/p/w500${d.poster_path}`, video: url, type: 'movie', sinopse: d.overview });
-        alert("OK!");
-    }
-</script>
+    <script src="app.js"></script>
 </body>
 </html>
