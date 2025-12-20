@@ -1,76 +1,87 @@
-// --- CONFIGURAÇÃO DO FIREBASE ---
+// --- CONFIGURAÇÃO FIREBASE ---
 const firebaseConfig = {
     apiKey: "AIzaSyCzxrJMumx3lbjsOXv9JHdXrn29jUg3x_0",
     authDomain: "outflix-9e57d.firebaseapp.com",
     projectId: "outflix-9e57d",
     databaseURL: "https://outflix-9e57d-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
-firebase.initializeApp(firebaseConfig);
+// Inicializa apenas se ainda não existir
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 const db = firebase.database();
 const auth = firebase.auth();
 
 // --- VARIÁVEIS GLOBAIS ---
 let currentUser = null;
 let allMedia = [];
-let activeMedia = null;
 
-// --- GERENCIADOR DE UI (Interface) ---
+// --- UI MANAGER (Interface) ---
 const ui = {
+    // Controla a tela de carregamento (Tela Preta)
     toggleLoader: (show) => {
         const el = document.getElementById('loader-screen');
-        if (show) el.classList.remove('hidden');
-        else {
-            el.style.opacity = '0';
-            setTimeout(() => el.classList.add('hidden'), 500);
+        if (show) {
+            el.classList.remove('hidden');
+        } else {
+            // Pequeno delay para suavizar a saída
+            setTimeout(() => {
+                el.style.opacity = '0';
+                setTimeout(() => {
+                    el.classList.add('hidden');
+                    el.style.opacity = '1'; // Reseta para a próxima vez
+                }, 500);
+            }, 500);
         }
     },
     
+    // Alterna entre Login e Registro
     toggleAuth: (mode) => {
-        document.getElementById('form-login').classList.toggle('hidden', mode === 'register');
-        document.getElementById('form-register').classList.toggle('hidden', mode === 'login');
+        const loginForm = document.getElementById('form-login');
+        const regForm = document.getElementById('form-register');
+        
+        if (mode === 'register') {
+            loginForm.classList.add('hidden');
+            regForm.classList.remove('hidden');
+        } else {
+            loginForm.classList.remove('hidden');
+            regForm.classList.add('hidden');
+        }
     },
 
     toggleSidebar: () => {
-        const sb = document.getElementById('sidebar');
-        sb.classList.toggle('open');
+        document.getElementById('sidebar').classList.toggle('open');
         const overlay = document.getElementById('sidebar-overlay');
-        overlay.style.display = sb.classList.contains('open') ? 'block' : 'none';
+        overlay.style.display = document.getElementById('sidebar').classList.contains('open') ? 'block' : 'none';
     },
 
     toggleAdmin: () => {
         document.getElementById('admin-panel').classList.toggle('hidden');
-        if(!document.getElementById('admin-panel').classList.contains('hidden')) {
-            app.loadAdminUsers();
-        }
+        if(!document.getElementById('admin-panel').classList.contains('hidden')) app.loadAdminUsers();
     },
 
-    scrollTo: (id) => {
-        const el = document.getElementById(id);
-        if(el) {
-            window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' });
-            ui.toggleSidebar();
-        }
-    },
-
+    // Modal de Detalhes
     openModal: (media) => {
-        activeMedia = media;
+        app.activeMedia = media;
         document.getElementById('modal-title').innerText = media.title;
-        document.getElementById('modal-sinopse').innerText = media.sinopse || "Sem descrição disponível.";
-        
-        // Preview Video (Muted Loop)
-        const previewHTML = `<video autoplay muted loop playsinline><source src="${media.video}"></video>`;
-        document.getElementById('modal-video-preview').innerHTML = previewHTML;
-        
+        document.getElementById('modal-sinopse').innerText = media.sinopse || "Sem descrição.";
+        document.getElementById('modal-video-preview').innerHTML = `<video autoplay muted loop playsinline><source src="${media.video}"></video>`;
         document.getElementById('modal-details').classList.remove('hidden');
     },
 
     closeModal: () => {
         document.getElementById('modal-details').classList.add('hidden');
-        document.getElementById('modal-video-preview').innerHTML = ""; // Stop video
+        document.getElementById('modal-video-preview').innerHTML = "";
     },
 
-    toggleLights: () => {
-        document.body.classList.toggle('lights-off');
+    // Player
+    startPlayer: () => {
+        ui.closeModal();
+        document.getElementById('player-overlay').classList.remove('hidden');
+        document.getElementById('video-container').innerHTML = `
+            <video controls autoplay width="100%" height="100%">
+                <source src="${app.activeMedia.video}" type="video/mp4">
+            </video>`;
     },
 
     closePlayer: () => {
@@ -80,53 +91,45 @@ const ui = {
     }
 };
 
-// --- LÓGICA DO APP (Back-end + Funcionalidades) ---
+// --- LÓGICA DO APP ---
 const app = {
-    // 1. Inicialização e Monitoramento de Sessão
+    activeMedia: null,
+
     init: () => {
+        // SEGURANÇA: Se o loader travar por 5 segundos, força a liberação
+        setTimeout(() => ui.toggleLoader(false), 5000);
+
         auth.onAuthStateChanged(async (user) => {
             if (user) {
+                // Usuário logado
                 try {
                     const snap = await db.ref('users/' + user.uid).once('value');
-                    const userData = snap.val();
-                    
-                    if (userData) {
-                        // Verificação de Validade da Conta
-                        const now = new Date();
-                        const validUntil = new Date(userData.valido_ate);
-                        
-                        if (now > validUntil && userData.role !== 'admin') {
-                            alert("Sua assinatura expirou. Entre em contato com o suporte.");
-                            app.logout();
-                            return;
-                        }
-
-                        currentUser = userData;
-                        app.showApp(user.uid);
+                    const val = snap.val();
+                    if (val) {
+                        currentUser = val;
+                        app.showApp();
                     } else {
-                        // Usuário no Auth mas sem dados no DB (Erro raro)
-                        app.logout();
+                        // Logado no Auth mas sem dados no DB
+                        app.showApp(); // Libera mesmo assim ou faz logout
                     }
-                } catch (error) {
-                    console.error("Erro DB:", error);
-                    alert("Erro ao conectar.");
+                } catch (e) {
+                    console.error(e);
+                    app.showApp(); // Libera em caso de erro de rede
                 }
             } else {
+                // Usuário não logado
                 app.showAuth();
             }
         });
     },
 
-    showApp: (uid) => {
+    showApp: () => {
         document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('app-screen').classList.remove('hidden');
-        ui.toggleLoader(false);
-
-        // Se for Admin, mostra botão
-        if (currentUser.role === 'admin') {
+        if (currentUser && currentUser.role === 'admin') {
             document.getElementById('btn-admin-panel').classList.remove('hidden');
         }
-
+        ui.toggleLoader(false);
         app.loadCatalog();
     },
 
@@ -136,190 +139,149 @@ const app = {
         ui.toggleLoader(false);
     },
 
-    // 2. Autenticação
+    // LOGIN
     login: async () => {
         const e = document.getElementById('login-email').value;
         const p = document.getElementById('login-pass').value;
-        if (!e || !p) return alert("Preencha todos os campos.");
+        if (!e || !p) return alert("Preencha e-mail e senha.");
         
         ui.toggleLoader(true);
         try {
             await auth.signInWithEmailAndPassword(e, p);
         } catch (err) {
             ui.toggleLoader(false);
-            alert("Erro: " + err.message);
+            let msg = "Erro ao entrar.";
+            if(err.code === 'auth/wrong-password') msg = "Senha incorreta.";
+            if(err.code === 'auth/user-not-found') msg = "Usuário não encontrado.";
+            alert(msg);
         }
     },
 
+    // REGISTRO COM CORREÇÃO DE ERRO
     register: async () => {
         const e = document.getElementById('reg-email').value;
         const p = document.getElementById('reg-pass').value;
-        const phone = document.getElementById('reg-phone').value;
-        const addr = document.getElementById('reg-addr').value;
-
-        if (!e || !p || !phone) return alert("Campos obrigatórios vazios.");
+        const ph = document.getElementById('reg-phone').value;
+        
+        if (!e || !p) return alert("Preencha os campos.");
 
         ui.toggleLoader(true);
         try {
             const res = await auth.createUserWithEmailAndPassword(e, p);
-            const exp = new Date();
-            exp.setDate(exp.getDate() + 7); // 7 Dias Grátis
-
-            const newUser = {
+            // Salva no banco
+            await db.ref('users/' + res.user.uid).set({
                 email: e,
-                phone: phone.replace(/\D/g, ''), // Salva só números
-                address: addr,
+                phone: ph || "",
                 role: 'user',
-                valido_ate: exp.toISOString()
-            };
-
-            await db.ref('users/' + res.user.uid).set(newUser);
+                joinDate: new Date().toISOString()
+            });
             location.reload();
+
         } catch (err) {
             ui.toggleLoader(false);
-            alert("Erro no registro: " + err.message);
+            
+            // CORREÇÃO ESPECÍFICA PARA SEU ERRO
+            if (err.code === 'auth/email-already-in-use') {
+                alert("Este e-mail já possui conta! Redirecionando para Login...");
+                ui.toggleAuth('login'); // Muda para a tela de login
+                document.getElementById('login-email').value = e; // Preenche o email
+                document.getElementById('login-pass').focus(); // Foca na senha
+            } else {
+                alert("Erro: " + err.message);
+            }
         }
     },
 
-    logout: () => {
-        auth.signOut().then(() => location.reload());
-    },
+    logout: () => auth.signOut().then(() => location.reload()),
 
-    // 3. Catálogo e Busca
+    // CATÁLOGO
     loadCatalog: () => {
-        db.ref('catalog').on('value', (snap) => {
+        db.ref('catalog').on('value', snap => {
             allMedia = [];
-            const rFeat = document.getElementById('row-featured');
             const rMov = document.getElementById('row-movies');
             const rSer = document.getElementById('row-series');
+            const rFeat = document.getElementById('row-featured');
             
-            rFeat.innerHTML = ""; rMov.innerHTML = ""; rSer.innerHTML = "";
+            if(rMov) rMov.innerHTML = "";
+            if(rSer) rSer.innerHTML = "";
+            if(rFeat) rFeat.innerHTML = "";
 
-            snap.forEach((child) => {
-                const m = child.val();
-                m.key = child.key;
+            snap.forEach(i => {
+                const m = i.val();
+                m.key = i.key;
                 allMedia.push(m);
-
                 const card = app.createCard(m);
 
-                // Organização
-                if (m.type === 'movie') rMov.appendChild(card);
-                else rSer.appendChild(card);
-
-                // Featured Fake (Pega os 8 primeiros)
-                if (allMedia.length <= 8) {
-                    const featCard = app.createCard(m);
-                    rFeat.appendChild(featCard);
-                }
+                if (m.type === 'movie' && rMov) rMov.appendChild(card);
+                else if (rSer) rSer.appendChild(card);
+                
+                // Em alta (fake logic: pega os primeiros)
+                if (allMedia.length <= 6 && rFeat) rFeat.appendChild(card.cloneNode(true)).onclick = () => ui.openModal(m);
             });
         });
     },
 
-    createCard: (media) => {
-        const el = document.createElement('div');
-        el.className = 'card';
-        el.style.backgroundImage = `url(${media.img})`;
-        el.onclick = () => ui.openModal(media);
-        return el;
+    createCard: (m) => {
+        const d = document.createElement('div');
+        d.className = 'card';
+        d.style.backgroundImage = `url(${m.img})`;
+        d.onclick = () => ui.openModal(m);
+        return d;
     },
 
     search: () => {
-        const term = document.getElementById('search-input').value.toLowerCase();
-        const resultsArea = document.getElementById('search-results-area');
-        const catalogArea = document.getElementById('catalog-area');
+        const t = document.getElementById('search-input').value.toLowerCase();
         const grid = document.getElementById('search-grid');
+        const resArea = document.getElementById('search-results-area');
+        const catArea = document.getElementById('catalog-area');
 
-        if (term.length > 2) {
-            resultsArea.classList.remove('hidden');
-            catalogArea.classList.add('hidden');
+        if (t.length > 2) {
+            catArea.classList.add('hidden');
+            resArea.classList.remove('hidden');
             grid.innerHTML = "";
-
-            const filtered = allMedia.filter(m => m.title.toLowerCase().includes(term));
-            filtered.forEach(m => grid.appendChild(app.createCard(m)));
+            allMedia.forEach(m => {
+                if (m.title.toLowerCase().includes(t)) {
+                    grid.appendChild(app.createCard(m));
+                }
+            });
         } else {
-            resultsArea.classList.add('hidden');
-            catalogArea.classList.remove('hidden');
+            catArea.classList.remove('hidden');
+            resArea.classList.add('hidden');
         }
     },
 
-    // 4. Player
-    startPlayer: () => {
-        ui.closeModal();
-        const player = document.getElementById('player-overlay');
-        const container = document.getElementById('video-container');
-        
-        player.classList.remove('hidden');
-        
-        // Video Full com Controles
-        container.innerHTML = `
-            <video controls autoplay width="100%" height="100%">
-                <source src="${activeMedia.video}" type="video/mp4">
-                Seu navegador não suporta vídeos HTML5.
-            </video>
-        `;
-    },
-
-    // 5. Funções Administrativas
-    loadAdminUsers: () => {
-        const list = document.getElementById('users-list-container');
-        list.innerHTML = "Atualizando...";
-        
-        db.ref('users').once('value', (snap) => {
-            list.innerHTML = "";
-            snap.forEach((u) => {
-                const user = u.val();
-                const isAdmin = user.role === 'admin';
-                const color = isAdmin ? '#ffc107' : '#007bff';
-                
-                const html = `
-                    <div class="user-item">
-                        <div>
-                            <span class="badge-role" style="background:${color}; color:${isAdmin?'black':'white'}">${user.role}</span>
-                            <strong>${user.email}</strong>
-                            <div style="font-size:0.8rem; color:#888;">${user.address || 'Sem endereço'}</div>
-                        </div>
-                        <a href="https://wa.me/55${user.phone}" target="_blank" style="color:#25d366; font-size:1.5rem;"><i class="fab fa-whatsapp"></i></a>
-                    </div>
-                `;
-                list.innerHTML += html;
-            });
-        });
-    },
-
+    // ADMIN
     postContent: async () => {
         const id = document.getElementById('tmdb-id').value;
         const type = document.getElementById('tmdb-type').value;
-        const videoUrl = document.getElementById('video-url').value;
-
-        if (!id || !videoUrl) return alert("Preencha o ID e a URL do vídeo.");
-
+        const url = document.getElementById('video-url').value;
+        
+        if (!id || !url) return alert("Faltam dados!");
+        
         try {
-            const apiKey = "2eaf2fd731f81a77741ecb625b588a40";
-            const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${apiKey}&language=pt-BR`);
-            
-            if (!res.ok) throw new Error("ID não encontrado no TMDB.");
-            
+            const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=2eaf2fd731f81a77741ecb625b588a40&language=pt-BR`);
             const data = await res.json();
-            
-            const newContent = {
+            await db.ref('catalog').push({
                 title: data.title || data.name,
                 img: `https://image.tmdb.org/t/p/w500${data.poster_path}`,
                 sinopse: data.overview,
                 type: type,
-                video: videoUrl,
-                date: new Date().toISOString()
-            };
-
-            await db.ref('catalog').push(newContent);
-            alert("Conteúdo postado com sucesso!");
-            document.getElementById('tmdb-id').value = "";
-            document.getElementById('video-url').value = "";
-            
-        } catch (error) {
-            alert(error.message);
-        }
+                video: url
+            });
+            alert("Sucesso!");
+        } catch (e) { alert("Erro API: " + e.message); }
+    },
+    
+    loadAdminUsers: () => {
+        db.ref('users').once('value', snap => {
+            const l = document.getElementById('users-list-container');
+            l.innerHTML = "";
+            snap.forEach(u => {
+                const v = u.val();
+                l.innerHTML += `<div class="user-item"><b>${v.email}</b> (${v.role})</div>`;
+            });
+        });
     }
 };
 
-// Iniciar Aplicação
 window.onload = app.init;
