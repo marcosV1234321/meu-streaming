@@ -1,88 +1,36 @@
-/* ARQUIVO DE CORREÇÃO MASTER FLIX - VERSÃO FINAL */
-
-/* 1. HEADER E LAYOUT */
-header {
-    background: rgba(0,0,0,0.95) !important;
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    padding: 10px 5% !important;
-    z-index: 1000 !important;
+/* custom.css - SISTEMA DE GESTÃO */
+.admin-container {
+    background: #1a1a1a;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    border: 1px solid var(--gold);
 }
-
-/* 2. SIDEBAR E SISTEMA DE FECHAR AO CLICAR FORA */
-#sidebar {
-    position: fixed !important;
-    top: 0 !important;
-    left: -280px !important;
-    width: 260px !important;
-    height: 100% !important;
-    background: #0d0d0d !important;
-    z-index: 3000 !important;
-    transition: left 0.4s ease !important;
-    display: flex !important;
-    flex-direction: column !important; /* Permite empurrar itens para o fim */
-    padding: 20px 0 !important;
+.admin-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+.admin-tabs button {
+    background: #333; color: white; border: none; padding: 10px 20px;
+    cursor: pointer; border-radius: 4px;
 }
-
-#sidebar.open {
-    left: 0 !important;
+.user-card {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 15px; border-bottom: 1px solid #333; background: #222; margin-top: 5px;
 }
+.status-online { color: #00ff00; font-size: 12px; }
+.btn-del { background: #ff4444; border: none; padding: 5px 10px; color: white; cursor: pointer; border-radius: 4px; }
+.btn-block { background: #ffa500; border: none; padding: 5px 10px; color: white; cursor: pointer; border-radius: 4px; }
 
-/* O Overlay agora é o segredo para sair ao clicar fora */
-#sidebar-overlay {
-    position: fixed !important;
-    inset: 0 !important;
-    background: rgba(0,0,0,0.8) !important;
-    z-index: 2500 !important;
-    display: none; /* Ativado via JS pelo ui.toggleSidebar */
-    backdrop-filter: blur(4px); /* Efeito de desfoque no fundo */
+/* REAJUSTE DE CARDS E LISTAS */
+.carousel-cards {
+    display: flex; gap: 15px; overflow-x: auto; padding: 15px 0;
+    scrollbar-width: none;
 }
-
-/* 3. POSICIONAMENTO ESTRATÉGICO DOS BOTÕES */
-.menu-list {
-    list-style: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    height: 100% !important;
-}
-
-/* Botões normais no topo */
-.menu-list li {
-    padding: 15px 25px !important;
-    font-size: 16px !important;
-    cursor: pointer !important;
-    transition: 0.3s !important;
-}
-
-/* Empurra os botões Início e Sair para o RODAPÉ da aba */
-.menu-list li:first-child { margin-top: 20px !important; }
-
-/* Local Estratégico: O "Sair" fica isolado no final */
-.menu-list li:last-child {
-    margin-top: auto !important; 
-    border-top: 1px solid #333 !important;
-    color: #ff4444 !important; /* Cor de destaque para sair */
-}
-
-.menu-list li:hover {
-    background: rgba(255,255,255,0.1) !important;
-}
-
-/* 4. AJUSTES GERAIS E RESPONSIVIDADE */
 .card {
-    width: 130px !important;
-    height: 190px !important;
-    border-radius: 8px !important;
+    width: 140px; height: 210px; flex-shrink: 0;
+    border-radius: 10px; background-size: cover; cursor: pointer;
+    transition: 0.3s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
 }
-
-@media (max-width: 768px) {
-    .modal-content { flex-direction: column !important; }
-    #search-input { max-width: 100px !important; }
-}
+.card:hover { transform: scale(1.1); z-index: 10; }
 
 @media (min-width: 1024px) {
-    .card { width: 190px !important; height: 280px !important; }
+    .card { width: 200px; height: 300px; }
 }
