@@ -6,6 +6,7 @@
     <title>MASTER FLIX PRO</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="custom.css">
     
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
@@ -25,18 +26,15 @@
         <div class="auth-container">
             <div class="auth-box">
                 <h1 class="logo-text">MASTER FLIX</h1>
-                
                 <div id="form-login">
                     <input type="email" id="login-email" placeholder="E-mail">
                     <input type="password" id="login-pass" placeholder="Senha">
                     <button class="btn-primary" onclick="app.login()">ENTRAR</button>
                     <p class="toggle-text" onclick="ui.toggleAuth('register')">Novo por aqui? <b>Assine agora.</b></p>
                 </div>
-
                 <div id="form-register" class="hidden">
                     <input type="email" id="reg-email" placeholder="Seu E-mail">
                     <input type="password" id="reg-pass" placeholder="Crie uma Senha">
-                    <input type="text" id="reg-phone" placeholder="WhatsApp (DDD + Número)">
                     <button class="btn-primary" onclick="app.register()">CRIAR CONTA</button>
                     <p class="toggle-text" onclick="ui.toggleAuth('login')">Já tem conta? <b>Entrar.</b></p>
                 </div>
@@ -59,7 +57,7 @@
         <div id="sidebar-overlay" onclick="ui.toggleSidebar()"></div>
         <nav id="sidebar">
             <ul class="menu-list">
-                <li onclick="ui.scrollTo('catalog-area')"><i class="fas fa-home"></i> Início</li>
+                <li onclick="location.reload()"><i class="fas fa-home"></i> Início</li>
                 <li onclick="app.logout()"><i class="fas fa-sign-out-alt"></i> Sair</li>
             </ul>
         </nav>
@@ -68,15 +66,14 @@
             <div id="admin-panel" class="admin-box hidden">
                 <h3>PAINEL MASTER</h3>
                 <div class="admin-form">
-                    <input type="text" id="tmdb-id" placeholder="ID TMDB (Ex: 550)">
+                    <input type="text" id="tmdb-id" placeholder="ID TMDB">
                     <select id="tmdb-type">
                         <option value="movie">Filme</option>
                         <option value="tv">Série</option>
                     </select>
-                    <input type="text" id="video-url" placeholder="URL do Vídeo (.mp4)">
+                    <input type="text" id="video-url" placeholder="URL .mp4">
                     <button class="btn-gold" onclick="app.postContent()">PUBLICAR</button>
                 </div>
-                <div id="users-list-container"></div>
             </div>
 
             <div id="catalog-area">
@@ -100,7 +97,7 @@
             <div id="modal-video-preview"></div>
             <div class="modal-info">
                 <h1 id="modal-title">Título</h1>
-                <p id="modal-sinopse">Carregando sinopse...</p>
+                <p id="modal-sinopse"></p>
                 <button class="btn-watch" onclick="ui.startPlayer()"><i class="fas fa-play"></i> ASSISTIR</button>
             </div>
         </div>
