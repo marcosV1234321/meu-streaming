@@ -7,38 +7,32 @@ const firebaseConfig = {
 
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.database(), auth = firebase.auth();
-
 let allMedia = [], currentUser = null, activeMedia = null;
 
-// TRADUTOR DE ERROS
 function traduzirErro(code) {
     switch (code) {
-        case 'auth/email-already-in-use': return "⚠️ Este e-mail já está em uso.";
-        case 'auth/wrong-password': return "🔑 Senha incorreta.";
-        case 'auth/user-not-found': return "👤 Usuário não encontrado.";
-        case 'auth/weak-password': return "🔒 Senha muito fraca (mínimo 6 caracteres).";
-        case 'auth/invalid-email': return "📧 E-mail inválido.";
-        default: return "❌ Ocorreu um erro inesperado.";
+        case 'auth/email-already-in-use': return "⚠️ Este e-mail já possui uma conta.";
+        case 'auth/wrong-password': return "🔑 Senha incorreta!";
+        case 'auth/user-not-found': return "👤 Usuário não cadastrado.";
+        case 'auth/weak-password': return "🔒 Senha muito curta (mín. 6 dígitos).";
+        default: return "❌ Erro: " + code;
     }
 }
 
 const ui = {
     toggleLoader: (show) => {
-        const loader = document.getElementById('loader-screen');
-        if (show) loader.classList.remove('hidden');
-        else {
-            loader.style.opacity = '0';
-            setTimeout(() => loader.classList.add('hidden'), 500);
-        }
+        const l = document.getElementById('loader-screen');
+        if(show) l.classList.remove('hidden');
+        else { l.style.opacity = '0'; setTimeout(() => l.classList.add('hidden'), 500); }
     },
     toggleAuth: (mode) => {
         document.getElementById('form-login').classList.toggle('hidden', mode === 'register');
         document.getElementById('form-register').classList.toggle('hidden', mode === 'login');
     },
     toggleSidebar: () => {
-        const sb = document.getElementById('sidebar');
-        sb.classList.toggle('open');
-        document.getElementById('sidebar-overlay').style.display = sb.classList.contains('open') ? 'block' : 'none';
+        const s = document.getElementById('sidebar');
+        s.classList.toggle('open');
+        document.getElementById('sidebar-overlay').style.display = s.classList.contains('open') ? 'block' : 'none';
     },
     openModal: (media) => {
         activeMedia = media;
@@ -64,7 +58,7 @@ const ui = {
 
 const app = {
     init: () => {
-        setTimeout(() => ui.toggleLoader(false), 5000); // Destrava em 5s
+        setTimeout(() => ui.toggleLoader(false), 5000);
         auth.onAuthStateChanged(async (user) => {
             if (user) {
                 const snap = await db.ref('users/' + user.uid).once('value');
@@ -87,7 +81,6 @@ const app = {
     },
     login: async () => {
         const e = document.getElementById('login-email').value, p = document.getElementById('login-pass').value;
-        if (!e || !p) return alert("Preencha os campos!");
         ui.toggleLoader(true);
         try { await auth.signInWithEmailAndPassword(e, p); }
         catch (err) { ui.toggleLoader(false); alert(traduzirErro(err.code)); }
