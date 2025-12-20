@@ -1,119 +1,121 @@
 :root {
     --primary: #e50914;
     --dark: #141414;
-    --light: #fff;
     --gray: #aaa;
-    --gold: #ffc107;
-    --overlay: rgba(0,0,0,0.8);
 }
 
 body {
-    margin: 0;
     background-color: var(--dark);
-    color: var(--light);
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    overflow-x: hidden;
-    transition: background 0.5s;
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    overflow-x: hidden; /* Impede rolagem lateral indesejada */
 }
 
-/* Utilitários */
 .hidden { display: none !important; }
-.lights-off { background-color: #000 !important; }
-.lights-off header, .lights-off .content-area, .lights-off #sidebar { opacity: 0; pointer-events: none; }
 
-/* Loader */
-#loader-screen { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; align-items: center; justify-content: center; }
-.logo-anim { color: var(--primary); font-size: 3rem; letter-spacing: 2px; animation: pulse 2s infinite; }
-@keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+/* --- LOADER --- */
+#loader-screen {
+    position: fixed; inset: 0; background: black; z-index: 9999;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: opacity 0.5s;
+}
+.spinner {
+    width: 40px; height: 40px; border: 4px solid #333; border-top: 4px solid var(--primary);
+    border-radius: 50%; animation: spin 1s linear infinite; margin-top: 15px;
+}
+@keyframes spin { 100% { transform: rotate(360deg); } }
 
-/* Autenticação */
-.auth-container { height: 100vh; display: flex; align-items: center; justify-content: center; background: url('https://assets.nflxext.com/ffe/siteui/vlv3/f841d4c7-10e1-40af-bcae-07a3f8dc141a/f6d7434e-d6de-4185-a6d4-c77a2d08737b/BR-pt-20220502-popsignuptwoweeks-perspective_alpha_website_small.jpg'); background-size: cover; }
-.auth-box { background: rgba(0,0,0,0.85); padding: 50px; border-radius: 8px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-input, select { width: 100%; padding: 15px; margin: 10px 0; background: #333; border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; }
-.btn-primary { background: var(--primary); color: white; border: none; padding: 15px; width: 100%; font-weight: bold; font-size: 1rem; border-radius: 4px; cursor: pointer; margin-top: 15px; transition: 0.3s; }
-.btn-primary:hover { background: #f40612; }
-.toggle-text { color: var(--gray); font-size: 0.9rem; cursor: pointer; margin-top: 20px; }
-.toggle-text b { color: white; }
+/* --- LOGIN / AUTH --- */
+.auth-bg {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.9)), url('https://assets.nflxext.com/ffe/siteui/vlv3/f841d4c7-10e1-40af-bcae-07a3f8dc141a/f6d7434e-d6de-4185-a6d4-c77a2d08737b/BR-pt-20220502-popsignuptwoweeks-perspective_alpha_website_small.jpg');
+    background-size: cover; padding: 20px; box-sizing: border-box;
+}
+.auth-box {
+    background: rgba(0,0,0,0.85); padding: 40px; width: 100%; max-width: 400px;
+    border-radius: 8px; text-align: center; border: 1px solid #333;
+}
+input, select {
+    width: 100%; padding: 14px; margin: 8px 0; background: #333; border: 1px solid #444;
+    color: white; border-radius: 4px; box-sizing: border-box; font-size: 16px;
+}
+.btn-red {
+    background: var(--primary); color: white; width: 100%; padding: 14px; margin-top: 15px;
+    border: none; font-weight: bold; cursor: pointer; border-radius: 4px; font-size: 16px; transition: 0.2s;
+}
+.btn-red:active { transform: scale(0.98); }
 
-/* Header & Nav */
-header { position: fixed; top: 0; width: 100%; height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 4%; background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, transparent 100%); z-index: 1000; box-sizing: border-box; transition: 0.4s; }
-header.scrolled { background: var(--dark); }
-.logo { color: var(--primary); font-size: 1.8rem; font-weight: bold; margin-left: 10px; }
-.icon-btn { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0 10px; }
-
-.search-container { display: flex; align-items: center; background: rgba(0,0,0,0.5); border: 1px solid white; padding: 5px 10px; border-radius: 4px; transition: 0.3s; margin-right: 15px; }
-.search-container input { background: transparent; border: none; padding: 5px; margin: 0; width: 0; transition: width 0.4s; }
-.search-container:hover input, .search-container input:focus { width: 200px; }
-
-/* Sidebar */
-#sidebar { position: fixed; top: 0; left: -260px; width: 250px; height: 100%; background: #000; z-index: 2000; padding-top: 80px; transition: 0.4s; border-right: 1px solid #333; }
-#sidebar.open { left: 0; }
-#sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1500; display: none; }
-.menu-list { list-style: none; padding: 0; }
-.menu-list li { padding: 15px 25px; color: var(--gray); cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 15px; }
-.menu-list li:hover { color: white; background: #222; border-left: 4px solid var(--primary); }
-
-/* Conteúdo & Cards */
-.content-area { padding-top: 90px; padding-bottom: 50px; }
-.section-title { margin: 20px 4%; font-size: 1.4rem; color: #e5e5e5; font-weight: bold; }
-
-.carousel-cards { display: flex; overflow-x: auto; padding: 20px 4%; gap: 10px; scrollbar-width: none; }
-.carousel-cards::-webkit-scrollbar { display: none; }
-.grid-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; padding: 0 4%; }
-
-.card { min-width: 160px; height: 240px; background-size: cover; background-position: center; border-radius: 4px; cursor: pointer; transition: transform 0.3s; position: relative; }
-.card:hover { transform: scale(1.1); z-index: 2; box-shadow: 0 0 15px rgba(0,0,0,0.8); }
-
-/* Modal de Detalhes */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 5000; display: flex; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.3s; }
-.modal-content { background: #181818; width: 100%; max-width: 900px; border-radius: 8px; overflow: hidden; position: relative; box-shadow: 0 0 50px rgba(0,0,0,0.9); }
-.modal-media { height: 400px; position: relative; background: black; }
-#modal-video-preview { width: 100%; height: 100%; }
-#modal-video-preview video { width: 100%; height: 100%; object-fit: cover; }
-.modal-gradient { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, #181818, transparent); pointer-events: none; }
-.btn-close-modal { position: absolute; top: 15px; right: 15px; background: #181818; color: white; border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; z-index: 10; font-weight: bold; }
-
-.modal-info { padding: 30px 40px; position: relative; top: -50px; }
-#modal-title { font-size: 2.5rem; margin: 0 0 15px; font-weight: 800; }
-.modal-meta { display: flex; gap: 15px; align-items: center; margin-bottom: 20px; font-size: 0.9rem; }
-.badge-hd { border: 1px solid white; padding: 0 5px; border-radius: 3px; font-size: 0.8rem; }
-#modal-sinopse { color: #ccc; line-height: 1.6; font-size: 1rem; margin-bottom: 30px; max-width: 600px; }
-.modal-actions { display: flex; gap: 15px; }
-.btn-watch { background: white; color: black; border: none; padding: 12px 30px; border-radius: 4px; font-weight: bold; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
-.btn-watch:hover { background: rgba(255,255,255,0.8); }
-.btn-secondary { background: rgba(109, 109, 110, 0.7); color: white; border: none; padding: 12px 25px; border-radius: 4px; font-weight: bold; cursor: pointer; }
-
-/* Admin Panel */
-.admin-box { background: #222; margin: 0 4% 30px; border-radius: 8px; border: 2px solid var(--gold); overflow: hidden; animation: slideDown 0.4s; }
-.admin-header { background: var(--gold); color: black; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-.admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px; }
-.admin-col { background: #1a1a1a; padding: 20px; border-radius: 8px; }
-.admin-col h4 { color: var(--gold); margin-top: 0; }
-.users-list { max-height: 250px; overflow-y: auto; font-size: 0.9rem; }
-.user-item { padding: 10px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
-.badge-role { font-size: 0.7rem; padding: 2px 5px; border-radius: 3px; text-transform: uppercase; font-weight: bold; }
-.btn-gold { background: var(--gold); color: black; font-weight: bold; border: none; padding: 10px; width: 100%; cursor: pointer; border-radius: 4px; margin-top: 10px; }
-
-/* Player Overlay */
-.player-overlay { position: fixed; inset: 0; background: black; z-index: 6000; display: flex; flex-direction: column; }
-.player-controls-top { position: absolute; top: 20px; right: 20px; z-index: 7000; display: flex; gap: 15px; }
-.ctrl-btn { background: rgba(255,255,255,0.2); border: none; color: white; width: 50px; height: 50px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; transition: 0.3s; }
-.ctrl-btn:hover { background: rgba(255,255,255,0.4); }
-.video-container { width: 100%; height: 100%; }
-.video-container video { width: 100%; height: 100%; }
-
-/* Mobile (Responsivo) */
-@media (max-width: 768px) {
-    .card { min-width: 120px; height: 180px; }
-    .search-container { width: 40px; }
-    .search-container:hover input, .search-container input:focus { width: 120px; }
-    .modal-content { max-height: 90vh; overflow-y: auto; }
-    .modal-media { height: 250px; }
-    #modal-title { font-size: 1.8rem; }
-    .modal-info { top: -20px; padding: 20px; }
-    .admin-grid { grid-template-columns: 1fr; }
-    .btn-watch { width: 100%; justify-content: center; }
+/* --- LAYOUT PRINCIPAL --- */
+header {
+    position: fixed; top: 0; width: 100%; height: 70px; padding: 0 4%;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+    z-index: 1000; display: flex; justify-content: space-between; align-items: center;
+    box-sizing: border-box;
 }
 
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.content-area { padding: 80px 4% 40px; }
+
+/* Menu Lateral */
+#sidebar {
+    position: fixed; top: 0; left: -280px; width: 260px; height: 100%;
+    background: #000; z-index: 2000; transition: left 0.3s ease-in-out;
+    border-right: 1px solid #333; padding-top: 60px;
+}
+#sidebar.open { left: 0; }
+#sidebar-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1500; display: none;
+}
+
+/* CARDS E LISTAS */
+.row-cards {
+    display: flex; overflow-x: auto; gap: 10px; padding: 10px 0 30px;
+    scrollbar-width: none; /* Firefox */
+}
+.row-cards::-webkit-scrollbar { display: none; } /* Chrome */
+
+.card {
+    flex: 0 0 auto; /* Impede o card de encolher */
+    width: 140px; height: 210px;
+    background-size: cover; background-position: center;
+    border-radius: 4px; cursor: pointer; transition: transform 0.3s;
+}
+.card:hover { transform: scale(1.05); z-index: 10; }
+
+/* Grid de Busca (Responsivo) */
+.grid-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 15px;
+}
+
+/* --- MODAL RESPONSIVO (AQUI ESTÁ O SEGREDO) --- */
+.modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000;
+    display: flex; align-items: center; justify-content: center; padding: 10px;
+}
+.modal-content {
+    background: #181818; width: 100%; max-width: 900px;
+    max-height: 90vh; overflow-y: auto; /* Permite rolar se for muito alto */
+    border-radius: 8px; display: flex; flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+}
+#modal-video-preview {
+    width: 100%; height: 250px; background: black; flex-shrink: 0;
+}
+#modal-video-preview video { width: 100%; height: 100%; object-fit: cover; }
+.modal-info { padding: 20px; }
+
+/* --- MEDIA QUERIES (ADAPTAÇÃO PC) --- */
+@media (min-width: 768px) {
+    .card { width: 200px; height: 300px; } /* Cards maiores no PC */
+    
+    .modal-content {
+        flex-direction: row; /* Modal vira horizontal no PC */
+        height: 500px; overflow: hidden;
+    }
+    #modal-video-preview {
+        width: 60%; height: 100%;
+    }
+    .modal-info {
+        width: 40%;
