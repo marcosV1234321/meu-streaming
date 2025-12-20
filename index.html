@@ -3,47 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MASTER FLIX PRO</title>
+    <title>MASTER FLIX PRO - PAINEL MASTER</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="custom.css">
-    
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
 </head>
 <body>
 
-    <div id="loader-screen">
-        <div class="loader-content">
-            <h1 class="logo-anim">MASTER FLIX</h1>
-            <div class="spinner"></div>
-            <p>Iniciando sistema seguro...</p>
-        </div>
-    </div>
+    <div id="loader-screen"><div class="spinner"></div></div>
 
     <div id="auth-screen" class="screen hidden">
         <div class="auth-container">
             <div class="auth-box">
-                <h1 class="logo-text">MASTER FLIX</h1>
+                <h1 class="logo">MASTER FLIX</h1>
                 <div id="form-login">
                     <input type="email" id="login-email" placeholder="E-mail">
                     <input type="password" id="login-pass" placeholder="Senha">
                     <button class="btn-primary" onclick="app.login()">ENTRAR</button>
-                    <p class="toggle-text" onclick="ui.toggleAuth('register')">Novo por aqui? <b>Assine agora.</b></p>
+                    <p onclick="ui.toggleAuth('register')">Novo? <b>Cadastre-se</b></p>
                 </div>
                 <div id="form-register" class="hidden">
-                    <input type="email" id="reg-email" placeholder="Seu E-mail">
-                    <input type="password" id="reg-pass" placeholder="Crie uma Senha">
+                    <input type="email" id="reg-email" placeholder="E-mail">
+                    <input type="password" id="reg-pass" placeholder="Senha">
+                    <input type="text" id="reg-name" placeholder="Nome completo">
                     <button class="btn-primary" onclick="app.register()">CRIAR CONTA</button>
-                    <p class="toggle-text" onclick="ui.toggleAuth('login')">Já tem conta? <b>Entrar.</b></p>
+                    <p onclick="ui.toggleAuth('login')">Voltar ao Login</p>
                 </div>
             </div>
         </div>
     </div>
 
     <div id="app-screen" class="screen hidden">
-        <header id="main-header">
+        <header>
             <div class="header-left">
                 <i class="fas fa-bars menu-icon" onclick="ui.toggleSidebar()"></i>
                 <span class="logo">MASTER FLIX</span>
@@ -63,32 +57,30 @@
         </nav>
 
         <main class="content-area">
-            <div id="admin-panel" class="admin-box hidden">
-                <h3>PAINEL MASTER</h3>
-                <div class="admin-form">
+            <div id="admin-panel" class="admin-container hidden">
+                <div class="admin-tabs">
+                    <button onclick="ui.switchAdminTab('media')">Mídias</button>
+                    <button onclick="ui.switchAdminTab('users')">Usuários</button>
+                </div>
+
+                <div id="tab-media" class="admin-tab-content">
                     <input type="text" id="tmdb-id" placeholder="ID TMDB">
-                    <select id="tmdb-type">
-                        <option value="movie">Filme</option>
-                        <option value="tv">Série</option>
-                    </select>
+                    <input type="text" id="manual-cat" placeholder="Categoria Manual (opcional)">
                     <input type="text" id="video-url" placeholder="URL .mp4">
-                    <button class="btn-gold" onclick="app.postContent()">PUBLICAR</button>
+                    <button class="btn-gold" onclick="app.postContent()">PUBLICAR MÍDIA</button>
+                </div>
+
+                <div id="tab-users" class="admin-tab-content hidden">
+                    <div class="user-controls">
+                        <input type="email" id="adm-user-email" placeholder="Novo E-mail">
+                        <input type="password" id="adm-user-pass" placeholder="Senha">
+                        <button onclick="app.adminCreateUser()">+ Adicionar Usuário</button>
+                    </div>
+                    <div id="users-list"></div>
                 </div>
             </div>
 
-            <div id="catalog-area">
-                <h2 class="section-title">Em Alta</h2>
-                <div id="row-featured" class="carousel-cards"></div>
-                <h2 class="section-title">Filmes</h2>
-                <div id="row-movies" class="carousel-cards"></div>
-                <h2 class="section-title">Séries</h2>
-                <div id="row-series" class="carousel-cards"></div>
-            </div>
-
-            <div id="search-results-area" class="hidden">
-                <h2 class="section-title">Resultados</h2>
-                <div id="search-grid" class="grid-cards"></div>
-            </div>
+            <div id="catalog-area"></div>
         </main>
     </div>
 
@@ -96,9 +88,12 @@
         <div class="modal-content" onclick="event.stopPropagation()">
             <div id="modal-video-preview"></div>
             <div class="modal-info">
-                <h1 id="modal-title">Título</h1>
+                <h2 id="modal-title"></h2>
                 <p id="modal-sinopse"></p>
-                <button class="btn-watch" onclick="ui.startPlayer()"><i class="fas fa-play"></i> ASSISTIR</button>
+                <div class="modal-btns">
+                    <button class="btn-watch" onclick="ui.startPlayer()">ASSISTIR</button>
+                    <button id="btn-fav-toggle" class="btn-fav">❤</button>
+                </div>
             </div>
         </div>
     </div>
