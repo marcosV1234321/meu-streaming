@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MASTER FLIX PRO</title>
+    <title>MASTER FLIX</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     
@@ -14,148 +14,91 @@
 <body>
 
     <div id="loader-screen">
-        <div class="loader-content">
-            <h1 class="logo-anim">MASTER FLIX</h1>
-            <div class="spinner"></div>
+        <div style="text-align:center">
+            <h1 style="color:#e50914; font-size:40px; margin-bottom:10px;">MASTER FLIX</h1>
+            <p style="color:white;">Iniciando sistema...</p>
         </div>
     </div>
 
-    <div id="auth-screen" class="screen hidden">
-        <div class="auth-container">
-            <div class="auth-box">
-                <h1 style="color:var(--red); margin-bottom: 20px;">MASTER FLIX</h1>
-                
-                <div id="form-login">
-                    <input type="email" id="login-email" placeholder="E-mail ou Usuário">
-                    <input type="password" id="login-pass" placeholder="Senha">
-                    <button class="btn-primary" onclick="app.login()">ENTRAR</button>
-                    <p class="toggle-text" onclick="ui.toggleAuth('register')">Novo por aqui? <b>Assine agora.</b></p>
-                </div>
-
-                <div id="form-register" class="hidden">
-                    <input type="email" id="reg-email" placeholder="Seu melhor E-mail">
-                    <input type="password" id="reg-pass" placeholder="Crie uma Senha">
-                    <div class="row-inputs">
-                        <input type="text" id="reg-phone" placeholder="WhatsApp (DDD+Num)">
-                    </div>
-                    <input type="text" id="reg-addr" placeholder="Endereço Completo">
-                    <button class="btn-primary" onclick="app.register()">CRIAR CONTA</button>
-                    <p class="toggle-text" onclick="ui.toggleAuth('login')">Já tem conta? <b>Entrar.</b></p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="app-screen" class="screen hidden">
-        
-        <header id="main-header">
-            <div class="header-left">
-                <button class="icon-btn" onclick="ui.toggleSidebar()"><i class="fas fa-bars"></i></button>
-                <span class="logo">MASTER FLIX</span>
-            </div>
+    <div id="auth-screen" class="hidden auth-bg">
+        <div class="auth-box">
+            <h2 style="color:#e50914">BEM-VINDO</h2>
             
-            <div class="header-right">
-                <div class="search-container">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="search-input" placeholder="Títulos, gente e gêneros" onkeyup="app.search()">
-                </div>
-                <button id="btn-admin-panel" class="icon-btn hidden" onclick="ui.toggleAdmin()" title="Painel Master"><i class="fas fa-crown" style="color:gold"></i></button>
+            <div id="form-login">
+                <input id="login-email" type="email" placeholder="E-mail">
+                <input id="login-pass" type="password" placeholder="Senha">
+                <button class="btn-red" onclick="app.login()">ENTRAR</button>
+                <p class="link-text" onclick="ui.toggleAuth('register')">Não tem conta? <b>Criar agora.</b></p>
+            </div>
+
+            <div id="form-register" class="hidden">
+                <input id="reg-email" type="email" placeholder="Seu E-mail">
+                <input id="reg-pass" type="password" placeholder="Crie uma Senha">
+                <input id="reg-phone" type="text" placeholder="WhatsApp (Opcional)">
+                <button class="btn-red" onclick="app.register()">CRIAR CONTA</button>
+                <p class="link-text" onclick="ui.toggleAuth('login')">Já tem conta? <b>Fazer Login.</b></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-screen" class="hidden">
+        <header>
+            <div style="display:flex; align-items:center; gap:15px;">
+                <i class="fas fa-bars" onclick="ui.toggleSidebar()" style="font-size:24px; cursor:pointer;"></i>
+                <span style="color:#e50914; font-weight:bold; font-size:22px;">MASTER FLIX</span>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <input id="search-input" type="text" placeholder="Buscar..." onkeyup="app.search()" style="padding:5px; border-radius:4px; border:none;">
+                <button id="btn-admin-panel" class="hidden" onclick="ui.toggleAdmin()" style="background:gold; border:none; padding:5px; border-radius:4px; font-weight:bold;">ADM</button>
             </div>
         </header>
 
         <div id="sidebar-overlay" onclick="ui.toggleSidebar()"></div>
-        <nav id="sidebar">
-            <div class="sidebar-header">
-                <span class="logo">MENU</span>
-            </div>
-            <ul class="menu-list">
-                <li onclick="ui.scrollTo('featured-section')"><i class="fas fa-fire"></i> Em Alta</li>
-                <li onclick="ui.scrollTo('movies-section')"><i class="fas fa-film"></i> Filmes</li>
-                <li onclick="ui.scrollTo('series-section')"><i class="fas fa-tv"></i> Séries</li>
-                <li onclick="app.logout()" style="color: #666; margin-top: 20px;"><i class="fas fa-sign-out-alt"></i> Sair</li>
-            </ul>
-        </nav>
+        <div id="sidebar">
+            <h3 style="padding:20px; color:#e50914">MENU</h3>
+            <div class="menu-item" onclick="app.logout()">Sair</div>
+        </div>
 
         <main class="content-area">
-            
-            <div id="admin-panel" class="admin-box hidden">
-                <div class="admin-header">
-                    <h3><i class="fas fa-user-shield"></i> PAINEL MASTER</h3>
-                    <button onclick="ui.toggleAdmin()" class="close-btn">✕</button>
-                </div>
-                
-                <div class="admin-grid">
-                    <div class="admin-col">
-                        <h4>Clientes & Acessos</h4>
-                        <div id="users-list-container" class="users-list">Carregando...</div>
-                    </div>
-
-                    <div class="admin-col">
-                        <h4>Adicionar Conteúdo (TMDB)</h4>
-                        <input type="text" id="tmdb-id" placeholder="ID do TMDB (Ex: 550)">
-                        <select id="tmdb-type">
-                            <option value="movie">Filme</option>
-                            <option value="tv">Série</option>
-                        </select>
-                        <input type="text" id="video-url" placeholder="URL do Vídeo (.mp4)">
-                        <button class="btn-gold" onclick="app.postContent()">PUBLICAR</button>
-                    </div>
-                </div>
+            <div id="admin-panel" class="hidden" style="background:#222; padding:20px; margin-bottom:20px; border:1px solid gold;">
+                <h3 style="color:gold">Painel Master</h3>
+                <input id="tmdb-id" placeholder="ID TMDB">
+                <select id="tmdb-type"><option value="movie">Filme</option><option value="tv">Série</option></select>
+                <input id="video-url" placeholder="URL MP4">
+                <button onclick="app.postContent()" style="background:gold; padding:10px; border:none; cursor:pointer; width:100%; margin-top:10px;">POSTAR</button>
+                <div id="users-list-container" style="margin-top:15px; color:#ccc; font-size:12px;"></div>
             </div>
 
             <div id="search-results-area" class="hidden">
-                <h2 class="section-title">Resultados da Busca</h2>
+                <h2>Resultados</h2>
                 <div id="search-grid" class="grid-cards"></div>
             </div>
 
             <div id="catalog-area">
-                <section id="featured-section">
-                    <h2 class="section-title">🔥 Mais Assistidos</h2>
-                    <div id="row-featured" class="carousel-cards"></div>
-                </section>
-
-                <section id="movies-section">
-                    <h2 class="section-title">🎬 Filmes</h2>
-                    <div id="row-movies" class="carousel-cards"></div>
-                </section>
-
-                <section id="series-section">
-                    <h2 class="section-title">📺 Séries</h2>
-                    <div id="row-series" class="carousel-cards"></div>
-                </section>
+                <h2>🔥 Destaques</h2>
+                <div id="row-featured" class="row-cards"></div>
+                <h2>🎬 Filmes</h2>
+                <div id="row-movies" class="row-cards"></div>
+                <h2>📺 Séries</h2>
+                <div id="row-series" class="row-cards"></div>
             </div>
-
         </main>
     </div>
 
     <div id="modal-details" class="modal-overlay hidden" onclick="ui.closeModal()">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-media">
-                <div id="modal-video-preview"></div>
-                <div class="modal-gradient"></div>
-                <button class="btn-close-modal" onclick="ui.closeModal()">✕</button>
-            </div>
-            <div class="modal-info">
-                <h1 id="modal-title">Título do Filme</h1>
-                <div class="modal-meta">
-                    <span id="modal-badge" class="badge-hd">HD</span>
-                    <span style="color:#46d369">98% Relevante</span>
-                </div>
-                <p id="modal-sinopse">Descrição do filme...</p>
-                <div class="modal-actions">
-                    <button class="btn-watch" onclick="app.startPlayer()"><i class="fas fa-play"></i> ASSISTIR</button>
-                    <button class="btn-secondary">Minha Lista</button>
-                </div>
+            <div id="modal-video-preview" style="height:250px; background:black;"></div>
+            <div style="padding:20px;">
+                <h2 id="modal-title">Titulo</h2>
+                <p id="modal-sinopse" style="height:100px; overflow-y:auto; color:#ccc;"></p>
+                <button onclick="ui.startPlayer()" class="btn-red" style="width:100%; padding:15px;">ASSISTIR</button>
             </div>
         </div>
     </div>
 
-    <div id="player-overlay" class="player-overlay hidden">
-        <div class="player-controls-top">
-            <button class="ctrl-btn" onclick="ui.toggleLights()" title="Apagar Luzes"><i class="fas fa-lightbulb"></i></button>
-            <button class="ctrl-btn" onclick="ui.closePlayer()" title="Fechar"><i class="fas fa-times"></i></button>
-        </div>
-        <div id="video-container" class="video-container"></div>
+    <div id="player-overlay" class="hidden" style="position:fixed; inset:0; background:black; z-index:6000;">
+        <button onclick="ui.closePlayer()" style="position:absolute; top:20px; right:20px; z-index:7000; background:rgba(255,255,255,0.3); color:white; border:none; padding:10px; border-radius:50%;">✕</button>
+        <div id="video-container" style="width:100%; height:100%;"></div>
     </div>
 
     <script src="app.js"></script>
