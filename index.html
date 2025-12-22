@@ -3,54 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MASTER FLIX</title>
+    <title>MASTER FLIX PRO</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+
+    <style>
+        :root { --red: #E50914; --dark: #141414; --card-w: 150px; --card-h: 85px; }
+        body { background: var(--dark); color: white; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; overflow-x: hidden; }
+        .hidden { display: none !important; }
+
+        /* --- TELAS DE ACESSO --- */
+        .auth-overlay { position: fixed; inset: 0; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://assets.nflxext.com/ffe/siteui/vlv3/f841d4c7-10e1-40af-bca1-07e3f8eb1468/a203e08c-d4b9-4d6d-9610-d0925769742d/BR-pt-20220502-popsignuptwoweeks-perspective_alpha_website_medium.jpg'); background-size: cover; display: flex; align-items: center; justify-content: center; z-index: 10000; }
+        .auth-box { background: rgba(0,0,0,0.85); padding: 50px; border-radius: 8px; width: 100%; max-width: 380px; box-sizing: border-box; }
+        .auth-box h1 { color: var(--red); font-size: 35px; text-align: center; margin-bottom: 30px; }
+        .auth-box input { width: 100%; padding: 12px; margin-bottom: 15px; background: #333; border: none; color: white; border-radius: 4px; box-sizing: border-box; }
+        .btn-red { width: 100%; padding: 14px; background: var(--red); color: white; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        .toggle-auth { color: #777; margin-top: 20px; cursor: pointer; text-align: center; }
+        .toggle-auth span { color: white; font-weight: bold; }
+
+        /* --- HEADER --- */
+        header { display: flex; justify-content: space-between; align-items: center; padding: 15px 4%; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); position: sticky; top: 0; z-index: 1000; }
+        .logo { color: var(--red); font-size: 25px; font-weight: bold; cursor: pointer; }
+        .header-tools { display: flex; align-items: center; gap: 15px; }
+        .btn-master-icon { color: #ffd700; font-size: 20px; background: none; border: none; cursor: pointer; }
+        .btn-exit { background: none; border: 1px solid white; color: white; padding: 5px 12px; border-radius: 3px; cursor: pointer; }
+
+        /* --- MENU LATERAL --- */
+        #sidebar { position: fixed; left: -280px; top: 0; width: 260px; height: 100%; background: #111; z-index: 2000; transition: 0.4s; padding-top: 60px; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+        #sidebar.active { left: 0; }
+        .menu-list { list-style: none; padding: 0; }
+        .menu-list li { padding: 18px 25px; border-bottom: 1px solid #222; cursor: pointer; font-size: 16px; display: flex; align-items: center; gap: 10px; }
+        .menu-list li:hover { background: #222; }
+
+        /* --- CATÁLOGO ESTILO NETFLIX --- */
+        .row { padding: 20px 4%; }
+        .row h3 { font-size: 1.2rem; margin-bottom: 15px; color: #e5e5e5; }
+        .carousel { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 10px; }
+        .carousel::-webkit-scrollbar { display: none; }
+        .movie-card { min-width: var(--card-w); height: var(--card-h); background-size: cover; background-position: center; border-radius: 4px; transition: 0.3s; cursor: pointer; position: relative; }
+        .movie-card:hover { transform: scale(1.1); z-index: 10; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
+
+        /* --- PAINEL ADMIN --- */
+        .admin-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 95%; max-width: 900px; height: 85vh; background: #181818; z-index: 3000; border-radius: 10px; border: 1px solid #333; padding: 25px; box-sizing: border-box; overflow-y: auto; }
+        .admin-nav { display: flex; gap: 10px; border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 20px; }
+        .admin-nav button { background: #333; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; }
+        .admin-nav button.active { background: var(--red); }
+        .admin-tab input, .admin-tab select { width: 100%; padding: 12px; margin-bottom: 15px; background: #2a2a2a; border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box; }
+        
+        /* LISTAS (USUÁRIOS/APIs) */
+        .list-box { background: #111; border-radius: 5px; padding: 10px; margin-top: 20px; }
+        .item-list { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #222; }
+        .item-list b { color: var(--red); }
+        .item-list i { cursor: pointer; margin-left: 15px; transition: 0.2s; }
+        .item-list .fa-whatsapp { color: #25d366; }
+        .item-list .fa-trash { color: #ff4444; }
+        .item-list .fa-ban { color: #ffa500; }
+
+        /* --- PLAYER --- */
+        #player-modal { position: fixed; inset: 0; background: #000; z-index: 5000; display: flex; align-items: center; justify-content: center; }
+        .close-player { position: absolute; top: 20px; right: 30px; font-size: 35px; cursor: pointer; color: white; }
+    </style>
 </head>
 <body>
 
     <div id="auth-screen" class="auth-overlay">
         <div class="auth-box">
-            <h1 class="logo-netflix">MASTER FLIX</h1>
+            <h1>MASTER FLIX</h1>
             <div id="login-form">
                 <input type="email" id="login-email" placeholder="E-mail">
                 <input type="password" id="login-pass" placeholder="Senha">
                 <button onclick="app.login()" class="btn-red">ENTRAR</button>
-                <p onclick="ui.toggleAuth()">Novo por aqui? <span>Assine agora.</span></p>
+                <div class="toggle-auth" onclick="ui.toggleAuth()">Novo por aqui? <span>Cadastre-se.</span></div>
             </div>
             <div id="register-form" class="hidden">
                 <input type="email" id="reg-email" placeholder="E-mail">
                 <input type="password" id="reg-pass" placeholder="Senha">
                 <input type="tel" id="reg-phone" placeholder="WhatsApp (DDD + Número)">
-                <button onclick="app.register()" class="btn-red">CADASTRAR</button>
-                <p onclick="ui.toggleAuth()">Já tem conta? <span>Entrar.</span></p>
+                <button onclick="app.register()" class="btn-red">CRIAR CONTA</button>
+                <div class="toggle-auth" onclick="ui.toggleAuth()">Já tem conta? <span>Fazer Login.</span></div>
             </div>
         </div>
     </div>
 
     <div id="app-content" class="hidden">
         <header>
-            <div class="header-left">
-                <i class="fas fa-bars" onclick="ui.toggleSidebar()"></i>
-                <div class="logo-netflix">MASTER FLIX</div>
+            <div class="header-tools">
+                <i class="fas fa-bars" style="cursor:pointer; font-size:22px;" onclick="ui.toggleSidebar()"></i>
+                <div class="logo" onclick="location.reload()">MASTER FLIX</div>
             </div>
-            <div class="header-right">
-                <button id="btn-master" class="btn-gold hidden" onclick="ui.toggleAdmin()"><i class="fas fa-crown"></i></button>
-                <button onclick="app.logout()" class="btn-exit">SAIR</button>
+            <div class="header-tools">
+                <button id="btn-master" class="btn-master-icon hidden" onclick="ui.toggleAdmin()"><i class="fas fa-crown"></i></button>
+                <button class="btn-exit" onclick="app.logout()">SAIR</button>
             </div>
         </header>
 
         <nav id="sidebar">
-            <ul>
+            <ul class="menu-list">
                 <li onclick="location.reload()"><i class="fas fa-home"></i> Início</li>
-                <li onclick="app.filter('Filmes')">Filmes</li>
-                <li onclick="app.filter('Séries')">Séries</li>
-                <li onclick="app.filter('Kids')">Kids</li>
-                <hr>
-                <li onclick="app.logout()" style="color:red"><i class="fas fa-sign-out-alt"></i> Sair</li>
+                <li onclick="app.filterBy('Filmes')"><i class="fas fa-film"></i> Filmes</li>
+                <li onclick="app.filterBy('Séries')"><i class="fas fa-tv"></i> Séries</li>
+                <li onclick="app.filterBy('Kids')"><i class="fas fa-child"></i> Kids</li>
+                <hr style="border:0; border-top:1px solid #333;">
+                <li onclick="app.logout()" style="color:var(--red)"><i class="fas fa-sign-out-alt"></i> Sair da Conta</li>
             </ul>
         </nav>
 
@@ -58,28 +115,201 @@
 
         <div id="admin-panel" class="admin-modal hidden">
             <div class="admin-nav">
-                <button onclick="ui.switchTab('tab-post')">POSTAR</button>
-                <button onclick="ui.switchTab('tab-users')">USUÁRIOS</button>
-                <button onclick="ui.toggleAdmin()">X</button>
+                <button onclick="ui.switchTab('tab-post', this)" class="active">POSTAR</button>
+                <button onclick="ui.switchTab('tab-users', this)">USUÁRIOS</button>
+                <button onclick="ui.switchTab('tab-config', this)">APIs</button>
+                <button onclick="ui.toggleAdmin()" style="margin-left:auto; background:#444">FECHAR</button>
             </div>
-            
+
             <div id="tab-post" class="admin-tab">
-                <input type="text" id="tmdb-id" placeholder="ID TMDB">
+                <input type="text" id="tmdb-id" placeholder="ID TMDB (ex: 550)">
+                <button onclick="app.fetchTMDB()" class="btn-red" style="margin-bottom:15px; background:#555">BUSCAR DADOS</button>
+                <div id="tmdb-preview" style="padding:10px; color:#aaa;"></div>
                 <input type="text" id="video-url" placeholder="Link do Vídeo">
                 <select id="manual-cat">
                     <option value="Filmes">Filmes</option>
                     <option value="Séries">Séries</option>
                     <option value="Kids">Kids</option>
                 </select>
-                <button onclick="app.postMedia()" class="btn-red">PUBLICAR</button>
+                <button onclick="app.postMedia()" class="btn-red">PUBLICAR NO CATÁLOGO</button>
             </div>
 
             <div id="tab-users" class="admin-tab hidden">
-                <div id="list-users"></div>
+                <div id="list-users" class="list-box"></div>
+            </div>
+
+            <div id="tab-config" class="admin-tab hidden">
+                <input type="text" id="api-name" placeholder="Nome da Chave">
+                <input type="text" id="api-val" placeholder="Chave / Token">
+                <button onclick="app.saveApiKey()" class="btn-red">SALVAR CHAVE</button>
+                <div id="list-apis" class="list-box"></div>
             </div>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <div id="player-modal" class="hidden">
+        <span class="close-player" onclick="ui.closePlayer()">✕</span>
+        <div id="video-inside" style="width:100%; max-width:1000px; aspect-ratio:16/9;"></div>
+    </div>
+
+    <script>
+        // FIREBASE CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyCzxrJMumx3lbjsOXv9JHdXrn29jUg3x_0",
+            authDomain: "outflix-9e57d.firebaseapp.com",
+            projectId: "outflix-9e57d",
+            databaseURL: "https://outflix-9e57d-default-rtdb.asia-southeast1.firebasedatabase.app"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const auth = firebase.auth();
+
+        let state = { tempTMDB: null };
+
+        const app = {
+            init: () => {
+                auth.onAuthStateChanged(user => {
+                    if (user) {
+                        db.ref(`users/${user.uid}`).on('value', snap => {
+                            const u = snap.val();
+                            if(u?.role === 'master') document.getElementById('btn-master').classList.remove('hidden');
+                            document.getElementById('auth-screen').classList.add('hidden');
+                            document.getElementById('app-content').classList.remove('hidden');
+                            app.loadCatalog();
+                            app.loadApiKeys();
+                        });
+                    } else {
+                        document.getElementById('auth-screen').classList.remove('hidden');
+                        document.getElementById('app-content').classList.add('hidden');
+                    }
+                });
+            },
+
+            login: () => {
+                const e = document.getElementById('login-email').value;
+                const p = document.getElementById('login-pass').value;
+                auth.signInWithEmailAndPassword(e, p).catch(err => alert("Erro: " + err.message));
+            },
+
+            register: () => {
+                const e = document.getElementById('reg-email').value;
+                const p = document.getElementById('reg-pass').value;
+                const t = document.getElementById('reg-phone').value;
+                if(!e || !p || !t) return alert("Preencha tudo!");
+                auth.createUserWithEmailAndPassword(e, p).then(res => {
+                    db.ref(`users/${res.user.uid}`).set({ email: e, phone: t, role: 'user', blocked: false });
+                }).catch(err => alert(err.message));
+            },
+
+            logout: () => auth.signOut().then(() => location.reload()),
+
+            loadCatalog: () => {
+                db.ref('catalog').on('value', snap => {
+                    const area = document.getElementById('catalog-area');
+                    area.innerHTML = "";
+                    const cats = ["Filmes", "Séries", "Kids"];
+                    cats.forEach(c => {
+                        let row = `<div class="row"><h3>${c}</h3><div class="carousel">`;
+                        let count = 0;
+                        snap.forEach(item => {
+                            const m = item.val();
+                            if(m.category === c) {
+                                count++;
+                                row += `<div class="movie-card" onclick="ui.openPlayer('${m.video}')" style="background-image:url(${m.img})"></div>`;
+                            }
+                        });
+                        row += `</div></div>`;
+                        if(count > 0) area.innerHTML += row;
+                    });
+                });
+            },
+
+            // TMDB & POST
+            fetchTMDB: async () => {
+                const id = document.getElementById('tmdb-id').value;
+                const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=2eaf2fd731f81a77741ecb625b588a40&language=pt-BR`);
+                state.tempTMDB = await res.json();
+                document.getElementById('tmdb-preview').innerText = "Filme: " + state.tempTMDB.title;
+            },
+
+            postMedia: () => {
+                if(!state.tempTMDB) return alert("Busque o TMDB!");
+                db.ref('catalog').push({
+                    title: state.tempTMDB.title,
+                    img: `https://image.tmdb.org/t/p/w500${state.tempTMDB.poster_path}`,
+                    video: document.getElementById('video-url').value,
+                    category: document.getElementById('manual-cat').value
+                }).then(() => alert("Postado!"));
+            },
+
+            // GESTÃO DE USUÁRIOS
+            loadUsers: () => {
+                db.ref('users').on('value', snap => {
+                    const list = document.getElementById('list-users');
+                    list.innerHTML = "";
+                    snap.forEach(child => {
+                        const u = child.val();
+                        const id = child.key;
+                        list.innerHTML += `
+                            <div class="item-list">
+                                <div><b style="color:${u.blocked?'red':'green'}">${u.email}</b><br><small>${u.phone}</small></div>
+                                <div>
+                                    <a href="https://wa.me/55${u.phone?.replace(/\D/g,'')}" target="_blank"><i class="fab fa-whatsapp"></i></a>
+                                    <i class="fas fa-ban" onclick="app.toggleBlock('${id}', ${u.blocked})"></i>
+                                    <i class="fas fa-trash" onclick="app.deleteUser('${id}')"></i>
+                                </div>
+                            </div>`;
+                    });
+                });
+            },
+            toggleBlock: (id, st) => db.ref(`users/${id}`).update({ blocked: !st }),
+            deleteUser: (id) => confirm("Deletar?") && db.ref(`users/${id}`).remove(),
+
+            // APIs
+            saveApiKey: () => {
+                const n = document.getElementById('api-name').value;
+                const v = document.getElementById('api-val').value;
+                db.ref('settings/apiKeys').push({ name: n, value: v });
+            },
+            loadApiKeys: () => {
+                db.ref('settings/apiKeys').on('value', snap => {
+                    const list = document.getElementById('list-apis');
+                    list.innerHTML = "";
+                    snap.forEach(c => {
+                        list.innerHTML += `<div class="item-list"><span>${c.val().name}</span> <i class="fas fa-trash" onclick="app.delKey('${c.key}')"></i></div>`;
+                    });
+                });
+            },
+            delKey: (id) => db.ref(`settings/apiKeys/${id}`).remove()
+        };
+
+        const ui = {
+            toggleAuth: () => {
+                document.getElementById('login-form').classList.toggle('hidden');
+                document.getElementById('register-form').classList.toggle('hidden');
+            },
+            toggleSidebar: () => document.getElementById('sidebar').classList.toggle('active'),
+            toggleAdmin: () => {
+                document.getElementById('admin-panel').classList.toggle('hidden');
+                app.loadUsers();
+            },
+            switchTab: (id, btn) => {
+                document.querySelectorAll('.admin-tab').forEach(t => t.classList.add('hidden'));
+                document.querySelectorAll('.admin-nav button').forEach(b => b.classList.remove('active'));
+                document.getElementById(id).classList.remove('hidden');
+                btn.classList.add('active');
+            },
+            openPlayer: (url) => {
+                document.getElementById('player-modal').classList.remove('hidden');
+                document.getElementById('video-inside').innerHTML = `<video src="${url}" controls autoplay style="width:100%; height:100%;"></video>`;
+            },
+            closePlayer: () => {
+                document.getElementById('player-modal').classList.add('hidden');
+                document.getElementById('video-inside').innerHTML = "";
+            }
+        };
+
+        window.onload = app.init;
+    </script>
 </body>
 </html>
