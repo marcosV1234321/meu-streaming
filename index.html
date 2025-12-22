@@ -6,239 +6,110 @@
     <title>MASTER FLIX PRO</title>
     
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
-
-    <style>
-        :root { --red: #e50914; --dark: #0a0a0a; --gold: #ffc107; --gray: #1a1a1a; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
-        body { background: var(--dark); color: white; overflow-x: hidden; }
-
-        /* HEADER ORIGINAL RESTAURADO */
-        header { position: fixed; top: 0; width: 100%; height: 70px; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: space-between; padding: 0 4%; z-index: 1000; border-bottom: 1px solid #222; }
-        .logo { color: var(--red); font-size: 1.4rem; font-weight: 900; line-height: 1; text-transform: uppercase; cursor: pointer; }
-        
-        .search-container { position: relative; flex: 1; max-width: 250px; margin: 0 20px; }
-        .search-container i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #888; }
-        #search-input { width: 100%; background: #141414; border: 1px solid #333; color: white; padding: 10px 10px 10px 35px; border-radius: 4px; outline: none; font-size: 14px; }
-        .btn-painel { background: var(--gold); border: none; padding: 10px 15px; border-radius: 4px; font-weight: bold; font-size: 11px; cursor: pointer; color: black; }
-
-        /* SIDEBAR ORIGINAL RESTAURADA */
-        #sidebar { position: fixed; left: -300px; top: 0; width: 280px; height: 100vh; background: #000; z-index: 3000; transition: 0.4s; border-right: 1px solid #222; overflow-y: auto; }
-        #sidebar.open { left: 0; }
-        .menu-list { list-style: none; padding-top: 90px; }
-        .menu-list li { padding: 15px 30px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #111; color: #bbb; transition: 0.3s; }
-        .menu-list li:hover { background: var(--gray); color: white; }
-        .submenu { background: #080808; display: none; list-style: none; padding-left: 20px; }
-        .submenu.active { display: block; }
-
-        /* CATALOGO ROBUSTO */
-        .content-area { padding: 100px 4% 50px; }
-        .section-title { font-size: 1.3rem; font-weight: bold; margin: 25px 0 15px; border-left: 4px solid var(--red); padding-left: 10px; }
-        .carousel-cards { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 15px; scrollbar-width: none; }
-        .card { width: 150px; height: 220px; flex: 0 0 auto; background-size: cover; background-position: center; border-radius: 6px; cursor: pointer; transition: 0.3s; position: relative; }
-        .card:hover { transform: scale(1.08); z-index: 5; box-shadow: 0 0 15px var(--red); }
-        .card-prog { position: absolute; bottom: 0; left: 0; height: 4px; background: var(--red); border-radius: 0 2px 2px 0; }
-
-        /* PAINEL ADMIN MASTER */
-        .admin-box { background: var(--gray); margin-bottom: 30px; padding: 25px; border-radius: 8px; border: 1px solid var(--gold); }
-        .admin-box input, .admin-box select { width: 100%; padding: 14px; margin-bottom: 10px; background: #000; border: 1px solid #333; color: white; border-radius: 4px; }
-        .btn-post { width: 100%; padding: 15px; background: var(--red); color: white; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; text-transform: uppercase; }
-
-        /* MODAL E PLAYER */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; display: flex; align-items: center; justify-content: center; }
-        .modal-content { background: #181818; width: 90%; max-width: 500px; border-radius: 12px; overflow: hidden; }
-        #player-overlay { position: fixed; inset: 0; background: #000; z-index: 9000; display: flex; }
-        .close-p { position: absolute; top: 20px; right: 20px; color: white; font-size: 30px; cursor: pointer; z-index: 10000; background: var(--red); border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border: none; }
-        .hidden { display: none !important; }
-    </style>
 </head>
 <body>
 
     <header>
-        <div style="display:flex; align-items:center; gap:15px;">
-            <i class="fas fa-bars" style="cursor:pointer" onclick="ui.toggleSidebar()"></i>
-            <div class="logo" onclick="location.reload()">MASTER<br>FLIX</div>
+        <div class="header-left">
+            <i class="fas fa-bars" id="menu-btn" onclick="ui.toggleSidebar()"></i>
+            <div class="logo">MASTER<br>FLIX</div>
         </div>
-        <div class="search-container">
+        
+        <div class="search-wrapper">
             <i class="fas fa-search"></i>
             <input type="text" id="search-input" placeholder="Títulos, Gêneros..." onkeyup="app.search()">
         </div>
-        <button id="adm-trigger" class="btn-painel hidden" onclick="ui.toggleAdmin()">PAINEL MASTER</button>
+
+        <button id="btn-master" class="btn-gold hidden" onclick="ui.toggleAdmin()">
+            <i class="fas fa-crown"></i> PAINEL
+        </button>
     </header>
 
-    <div id="sidebar-overlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:2500; display:none" onclick="ui.toggleSidebar()"></div>
+    <div id="sidebar-overlay" onclick="ui.toggleSidebar()"></div>
     <nav id="sidebar">
-        <ul class="menu-list">
+        <ul class="menu-items">
             <li onclick="location.reload()"><i class="fas fa-home"></i> Início</li>
-            <li onclick="ui.toggleSub('sub-filmes')"><span><i class="fas fa-film"></i> Filmes</span> <i class="fas fa-chevron-down"></i></li>
+            
+            <li onclick="ui.toggleSubmenu('sub-filmes')">
+                <span><i class="fas fa-film"></i> Filmes</span>
+                <i class="fas fa-chevron-down"></i>
+            </li>
             <ul id="sub-filmes" class="submenu">
-                <li onclick="app.filter('Ação')">Ação</li>
-                <li onclick="app.filter('Terror')">Terror</li>
-                <li onclick="app.filter('Comédia')">Comédia</li>
+                <li onclick="app.filterByCat('Ação')">Ação</li>
+                <li onclick="app.filterByCat('Terror')">Terror</li>
+                <li onclick="app.filterByCat('Comédia')">Comédia</li>
+                <li onclick="app.filterByCat('Drama')">Drama</li>
             </ul>
-            <li onclick="app.filter('Séries')"><i class="fas fa-tv"></i> Séries</li>
-            <li onclick="app.filter('Favoritos')"><i class="fas fa-heart"></i> Minha Lista</li>
-            <li style="color:var(--red); border-top:1px solid #222; margin-top:10px" onclick="auth.signOut()"><i class="fas fa-sign-out-alt"></i> Sair</li>
+
+            <li onclick="app.filterByCat('Séries')"><i class="fas fa-tv"></i> Séries</li>
+            <li onclick="app.filterByCat('Infantil')"><i class="fas fa-child"></i> Kids</li>
+            <li style="border-top: 1px solid #333; margin-top: 20px; color: var(--red);" onclick="auth.signOut()">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </li>
         </ul>
     </nav>
 
-    <main class="content-area">
-        <div id="admin-panel" class="admin-box hidden">
-            <h2 style="color:var(--gold); text-align:center; margin-bottom:15px">GERENCIAMENTO MASTER</h2>
-            <div style="display:flex; gap:10px; margin-bottom:15px">
-                <button onclick="ui.switchAdm('media')" style="flex:1; padding:8px">Mídias</button>
-                <button onclick="ui.switchAdm('users')" style="flex:1; padding:8px">Usuários</button>
+    <main>
+        <div id="admin-panel" class="admin-container hidden">
+            <div class="admin-header">
+                <h2><i class="fas fa-cogs"></i> CENTRAL MASTER</h2>
+                <button onclick="ui.toggleAdmin()" style="background:none; border:none; color:white;">✕</button>
             </div>
             
-            <div id="adm-media">
-                <input type="text" id="tmdb-id" placeholder="ID TMDB">
-                <input type="text" id="manual-cat" placeholder="Categoria Manual">
-                <input type="text" id="video-url" placeholder="URL do Vídeo (.mp4)">
-                <button class="btn-post" onclick="app.post()">PUBLICAR</button>
+            <div class="tabs">
+                <button class="tab-btn active" onclick="ui.switchTab('media', event)">POSTAR MÍDIA</button>
+                <button class="tab-btn" onclick="ui.switchTab('users', event)">USUÁRIOS</button>
             </div>
 
-            <div id="adm-users" class="hidden">
-                <div id="user-list-render"></div>
+            <div id="tab-media" class="tab-content">
+                <div class="input-group">
+                    <input type="text" id="tmdb-id" placeholder="ID do TMDB (Ex: 550)">
+                    <button onclick="app.fetchTMDB()" class="btn-check">CHECAR</button>
+                </div>
+                <input type="text" id="manual-cat" placeholder="Categoria (Ex: Terror, Ação...)">
+                <input type="text" id="video-url" placeholder="Link Direto do Vídeo (.mp4)">
+                <div id="preview-area"></div>
+                <button onclick="app.postMedia()" class="btn-save">PUBLICAR NO APP</button>
+            </div>
+
+            <div id="tab-users" class="tab-content hidden">
+                <div id="users-list">Carregando usuários...</div>
             </div>
         </div>
 
-        <div id="catalog-area"></div>
+        <div id="catalog-area">
+            </div>
     </main>
 
     <div id="modal-details" class="modal-overlay hidden" onclick="ui.closeModal()">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div id="m-img" style="height:250px; background-size:cover; background-position:center"></div>
-            <div style="padding:20px">
-                <h2 id="m-title"></h2>
-                <p id="m-desc" style="font-size:14px; color:#aaa; margin:15px 0"></p>
-                <button class="btn-post" onclick="ui.play()">ASSISTIR AGORA</button>
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <div id="modal-cover" class="modal-hero"></div>
+            <div class="modal-info">
+                <h1 id="modal-title">Titulo do Filme</h1>
+                <div class="modal-meta">
+                    <span id="modal-cat" class="tag">Gênero</span>
+                </div>
+                <p id="modal-desc">Descrição do filme...</p>
+                <div class="modal-actions">
+                    <button class="btn-play" onclick="ui.startPlayer()">
+                        <i class="fas fa-play"></i> ASSISTIR
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="player-overlay" class="hidden">
-        <button class="close-p" onclick="ui.closePlayer()">✕</button>
-        <div id="v-render" style="width:100%; height:100%"></div>
+    <div id="video-player-overlay" class="hidden">
+        <button class="close-player" onclick="ui.stopPlayer()">✕</button>
+        <div id="video-container"></div>
     </div>
 
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCzxrJMumx3lbjsOXv9JHdXrn29jUg3x_0",
-            authDomain: "outflix-9e57d.firebaseapp.com",
-            projectId: "outflix-9e57d",
-            databaseURL: "https://outflix-9e57d-default-rtdb.asia-southeast1.firebasedatabase.app"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database(), auth = firebase.auth();
-
-        let allData = [], currentUser = null, activeMedia = null;
-
-        const ui = {
-            toggleSidebar: () => {
-                const s = document.getElementById('sidebar'), o = document.getElementById('sidebar-overlay');
-                s.classList.toggle('open');
-                o.style.display = s.classList.contains('open') ? 'block' : 'none';
-            },
-            toggleSub: (id) => document.getElementById(id).classList.toggle('active'),
-            toggleAdmin: () => document.getElementById('admin-panel').classList.toggle('hidden'),
-            switchAdm: (t) => {
-                document.getElementById('adm-media').classList.add('hidden');
-                document.getElementById('adm-users').classList.add('hidden');
-                document.getElementById('adm-'+t).classList.remove('hidden');
-                if(t === 'users') app.loadUsers();
-            },
-            closeModal: () => document.getElementById('modal-details').classList.add('hidden'),
-            play: (time = 0) => {
-                ui.closeModal();
-                document.getElementById('player-overlay').classList.remove('hidden');
-                document.getElementById('v-render').innerHTML = `<video id="core-v" controls autoplay style="width:100%;height:100%"><source src="${activeMedia.video}"></video>`;
-                const v = document.getElementById('core-v');
-                if(time) v.currentTime = time;
-                v.ontimeupdate = () => { if(Math.floor(v.currentTime) % 10 === 0) app.saveProgress(v.currentTime); };
-            },
-            closePlayer: () => { document.getElementById('player-overlay').classList.add('hidden'); document.getElementById('v-render').innerHTML = ""; }
-        };
-
-        const app = {
-            init: () => {
-                auth.onAuthStateChanged(user => {
-                    if(user) {
-                        db.ref('users/' + user.uid).on('value', snap => {
-                            currentUser = snap.val() || {}; currentUser.uid = user.uid;
-                            if(currentUser.role === 'admin') document.getElementById('adm-trigger').classList.remove('hidden');
-                            app.loadCatalog();
-                        });
-                    }
-                });
-            },
-            loadCatalog: () => {
-                db.ref('catalog').on('value', snap => {
-                    const area = document.getElementById('catalog-area');
-                    area.innerHTML = ""; allData = [];
-                    if(!snap.exists()) return;
-
-                    snap.forEach(c => { const m = c.val(); m.key = c.key; allData.push(m); });
-
-                    // CONTINUAR ASSISTINDO
-                    db.ref(`users/${currentUser.uid}/progress`).once('value', pSnap => {
-                        if(pSnap.exists()) {
-                            app.renderRow(area, "Continuar Assistindo", Object.values(pSnap.val()).map(p => ({...p.media, time: p.time})));
-                        }
-                        
-                        // CATEGORIAS
-                        const cats = {};
-                        allData.forEach(m => {
-                            const n = m.category || "Destaques";
-                            if(!cats[n]) cats[n] = [];
-                            cats[n].push(m);
-                        });
-                        for(let name in cats) app.renderRow(area, name, cats[name]);
-                    });
-                });
-            },
-            renderRow: (area, title, list) => {
-                const sec = document.createElement('div');
-                sec.innerHTML = `<h2 class="section-title">${title}</h2><div class="carousel-cards"></div>`;
-                const row = sec.querySelector('.carousel-cards');
-                list.forEach(m => {
-                    const card = document.createElement('div');
-                    card.className = "card";
-                    card.style.backgroundImage = `url(${m.img})`;
-                    if(m.time) card.innerHTML = `<div class="card-prog" style="width:65%"></div>`;
-                    card.onclick = () => { activeMedia = m; m.time ? ui.play(m.time) : app.details(m); };
-                    row.appendChild(card);
-                });
-                area.appendChild(sec);
-            },
-            details: (m) => {
-                activeMedia = m;
-                document.getElementById('m-img').style.backgroundImage = `url(${m.img})`;
-                document.getElementById('m-title').innerText = m.title;
-                document.getElementById('m-desc').innerText = m.sinopse;
-                document.getElementById('modal-details').classList.remove('hidden');
-            },
-            search: () => {
-                const t = document.getElementById('search-input').value.toLowerCase();
-                const area = document.getElementById('catalog-area');
-                if(!t) return app.loadCatalog();
-                const filtered = allData.filter(m => m.title.toLowerCase().includes(t));
-                area.innerHTML = "";
-                app.renderRow(area, "Resultados da Busca", filtered);
-            },
-            post: async () => {
-                const id = document.getElementById('tmdb-id').value;
-                const cat = document.getElementById('manual-cat').value;
-                const url = document.getElementById('video-url').value;
-                const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=2eaf2fd731f81a77741ecb625b588a40&language=pt-BR`);
-                const d = await res.json();
-                db.ref('catalog').push({ title: d.title, img: `https://image.tmdb.org/t/p/w500${d.poster_path}`, sinopse: d.overview, video: url, category: cat || "Filmes" });
-                alert("Postado!");
-            },
-            saveProgress: (t) => { if(currentUser && activeMedia) db.ref(`users/${currentUser.uid}/progress/${activeMedia.key}`).update({ time: t, media: activeMedia }); }
-        };
-        window.onload = app.init;
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
