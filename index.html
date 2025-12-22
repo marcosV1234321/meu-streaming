@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MASTER FLIX PRO</title>
-    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
     <link rel="stylesheet" href="style.css">
 
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
@@ -17,15 +15,13 @@
 
     <header>
         <div class="header-left">
-            <i class="fas fa-bars" id="menu-btn" onclick="ui.toggleSidebar()"></i>
+            <i class="fas fa-bars" onclick="ui.toggleSidebar()"></i>
             <div class="logo" onclick="location.reload()">MASTER<br>FLIX</div>
         </div>
-        
         <div class="search-wrapper">
             <i class="fas fa-search"></i>
-            <input type="text" id="search-input" placeholder="Títulos, Gêneros..." onkeyup="app.search()">
+            <input type="text" id="search-input" placeholder="Pesquisar..." onkeyup="app.search()">
         </div>
-
         <button id="btn-master" class="btn-gold" onclick="ui.toggleAdmin()">
             <i class="fas fa-crown"></i> PAINEL
         </button>
@@ -35,7 +31,6 @@
     <nav id="sidebar">
         <ul class="menu-items">
             <li onclick="location.reload()"><i class="fas fa-home"></i> Início</li>
-            
             <li onclick="ui.toggleSubmenu('sub-filmes')">
                 <span><i class="fas fa-film"></i> Filmes</span>
                 <i class="fas fa-chevron-down"></i>
@@ -45,54 +40,39 @@
                 <li onclick="app.filterByCat('Terror')">Terror</li>
                 <li onclick="app.filterByCat('Comédia')">Comédia</li>
             </ul>
-
-            <li onclick="app.filterByCat('Séries')"><i class="fas fa-tv"></i> Séries</li>
-            <li onclick="app.filterByCat('Infantil')"><i class="fas fa-child"></i> Kids</li>
         </ul>
     </nav>
 
     <main>
         <div id="admin-panel" class="admin-container hidden">
             <div class="admin-header">
-                <h2><i class="fas fa-cogs"></i> CENTRAL MASTER</h2>
-                <button onclick="ui.toggleAdmin()" style="background:none; border:none; color:white; font-size:20px;">✕</button>
+                <h2>ADMINISTRAÇÃO</h2>
+                <button onclick="ui.toggleAdmin()">✕</button>
             </div>
-            
             <div class="tabs">
-                <button class="tab-btn active" onclick="ui.switchTab('media', event)">POSTAR MÍDIA</button>
+                <button class="tab-btn active" onclick="ui.switchTab('media', event)">POSTAR</button>
                 <button class="tab-btn" onclick="ui.switchTab('users', event)">USUÁRIOS</button>
             </div>
-
             <div id="tab-media" class="tab-content">
-                <div class="input-group">
-                    <input type="text" id="tmdb-id" placeholder="ID do TMDB (Ex: 550)">
-                    <button onclick="app.fetchTMDB()" class="btn-check">CHECAR</button>
-                </div>
-                <input type="text" id="manual-cat" placeholder="Categoria (Ex: Ação, Terror...)">
-                <input type="text" id="video-url" placeholder="Link do Vídeo (.mp4)">
-                
+                <input type="text" id="tmdb-id" placeholder="ID TMDB">
+                <button onclick="app.fetchTMDB()" class="btn-check">BUSCAR DADOS</button>
+                <input type="text" id="manual-cat" placeholder="Categoria">
+                <input type="text" id="video-url" placeholder="Link (Drive, Dropbox ou .mp4)">
                 <div id="preview-area"></div>
-                
-                <button onclick="app.postMedia()" class="btn-save" style="margin-top:10px;">PUBLICAR NO APP</button>
-            </div>
-
-            <div id="tab-users" class="tab-content hidden">
-                <div id="users-list">Carregando usuários...</div>
+                <button onclick="app.postMedia()" class="btn-save">PUBLICAR AGORA</button>
             </div>
         </div>
 
-        <div id="catalog-area">
-            </div>
+        <div id="catalog-area"></div>
     </main>
 
     <div id="modal-details" class="modal-overlay hidden" onclick="ui.closeModal()">
         <div class="modal-card" onclick="event.stopPropagation()">
             <div id="modal-cover" class="modal-hero"></div>
             <div class="modal-info">
-                <h1 id="modal-title">Titulo</h1>
-                <div class="modal-meta"><span id="modal-cat" class="tag">Gênero</span></div>
-                <p id="modal-desc">Descrição...</p>
-                <button class="btn-play" onclick="ui.startPlayer()">
+                <h1 id="modal-title"></h1>
+                <div class="modal-meta"><span id="modal-cat" class="tag"></span></div>
+                <p id="modal-desc"></p> <button class="btn-play" onclick="ui.startPlayer()">
                     <i class="fas fa-play"></i> ASSISTIR
                 </button>
             </div>
