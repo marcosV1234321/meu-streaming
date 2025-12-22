@@ -9,16 +9,22 @@ if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
 
-let state = { allMedia: [], activeMedia: null, tempTMDB: null };
+let state = { allMedia: [], activeMedia: null, tempTMDB: null, apiKeys: {} };
 
-// CONVERSOR DE LINKS DRIVE E DROPBOX
+// CONFIGURAÇÃO DE VÍDEO COM USO DE CHAVES
 const videoTools = {
     formatUrl: (url) => {
         if (!url) return "";
+        const keys = state.apiKeys;
+        
         if (url.includes("drive.google.com")) {
             const id = url.split('/d/')[1]?.split('/')[0] || url.split('id=')[1];
-            return `https://docs.google.com/get_video_info?docid=${id}&format=google_drive`;
+            // Usa a chave de API se disponível para links mais estáveis
+            return keys.gdrive ? 
+                `https://www.googleapis.com/drive/v3/files/${id}?alt=media&key=${keys.gdrive}` :
+                `https://docs.google.com/get_video_info?docid=${id}&format=google_drive`;
         }
+        
         if (url.includes("dropbox.com")) {
             return url.replace("?dl=0", "?raw=1").replace("&dl=0", "&raw=1");
         }
@@ -40,17 +46,13 @@ const ui = {
         event.target.classList.add('active');
     },
     closeModal: () => document.getElementById('modal-details').classList.add('hidden'),
-    
-    // PLAYER NA MESMA TELA
     startPlayer: () => {
         const media = state.activeMedia;
         if (!media) return;
         ui.closeModal();
         const playerOverlay = document.getElementById('video-player-overlay');
         playerOverlay.classList.remove('hidden');
-        
         const finalUrl = videoTools.formatUrl(media.video);
-        
         document.getElementById('video-container').innerHTML = `
             <video id="main-video" controls autoplay playsinline style="width:100%; height:100%; background:#000;">
                 <source src="${finalUrl}" type="video/mp4">
@@ -63,7 +65,27 @@ const ui = {
 };
 
 const app = {
-    init: () => app.loadCatalog(),
+    init: () => {
+        app.loadApiKeys();
+        app.loadCatalog();
+    },
+
+    loadApiKeys: () => {
+        db.ref('settings/apiKeys').on('value', snap => {
+            if(snap.exists()) {
+                state.apiKeys = snap.val();
+                document.getElementById('gdrive-key').value = state.apiKeys.gdrive || "";
+                document.getElementById('dropbox-token').value = state.apiKeys.dropbox || "";
+            }
+        });
+    },
+
+    saveApiKeys: () => {
+        const gdrive = document.getElementById('gdrive-key').value;
+        const dropbox = document.getElementById('dropbox-token').value;
+        db.ref('settings/apiKeys').set({ gdrive, dropbox })
+            .then(() => alert("Chaves de API salvas, Master!"));
+    },
     
     loadCatalog: () => {
         db.ref('catalog').on('value', (snapshot) => {
@@ -106,7 +128,6 @@ const app = {
             state.activeMedia = media;
             document.getElementById('modal-cover').style.backgroundImage = `url('${media.img}')`;
             document.getElementById('modal-title').innerText = media.title;
-            // SINOPSE CORRIGIDA
             document.getElementById('modal-desc').innerText = media.sinopse || "Sem descrição.";
             document.getElementById('modal-cat').innerText = media.category || "Mídia";
             document.getElementById('modal-details').classList.remove('hidden');
@@ -119,22 +140,41 @@ const app = {
             const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=2eaf2fd731f81a77741ecb625b588a40&language=pt-BR`);
             const data = await res.json();
             state.tempTMDB = data;
-            document.getElementById('preview-area').innerHTML = `<p>✅ ${data.title}</p>`;
-        } catch(e) { alert("Erro TMDB"); }
+            document.getElementById('preview-area').innerHTML = `<p style="color:green; margin:10px 0;">✅ Dados de "${data.title}" carregados!</p>`;
+        } catch(e) { alert("Erro ao conectar com TMDB"); }
     },
 
     postMedia: () => {
-        if(!state.tempTMDB) return;
+        if(!state.tempTMDB) return alert("Busque os dados no TMDB primeiro!");
         const url = document.getElementById('video-url').value;
         const cat = document.getElementById('manual-cat').value;
         db.ref('catalog').push({
             title: state.tempTMDB.title,
-            sinopse: state.tempTMDB.overview, // SALVA A SINOPSE
+            sinopse: state.tempTMDB.overview,
             img: `https://image.tmdb.org/t/p/w500${state.tempTMDB.poster_path}`,
             video: url,
-            category: cat || "Lançamentos"
+            category: cat
+        }).then(() => {
+            alert("Conteúdo publicado com sucesso!");
+            document.getElementById('preview-area').innerHTML = "";
         });
-        alert("Publicado!");
+    },
+
+    search: () => {
+        const term = document.getElementById('search-input').value.toLowerCase();
+        const area = document.getElementById('catalog-area');
+        if(!term) return app.loadCatalog();
+        const filtered = state.allMedia.filter(m => m.title.toLowerCase().includes(term));
+        area.innerHTML = "";
+        app.renderSection(area, "Resultados", filtered);
+    },
+    
+    filterByCat: (catName) => {
+        const area = document.getElementById('catalog-area');
+        const filtered = state.allMedia.filter(m => (m.category === catName));
+        area.innerHTML = "";
+        app.renderSection(area, catName, filtered);
+        ui.toggleSidebar();
     }
 };
 
