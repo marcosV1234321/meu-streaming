@@ -1,85 +1,84 @@
-const firebaseConfig = {
-    apiKey: "AIzaSyCzxrJMumx3lbjsOXv9JHdXrn29jUg3x_0",
-    authDomain: "outflix-9e57d.firebaseapp.com",
-    projectId: "outflix-9e57d",
-    databaseURL: "https://outflix-9e57d-default-rtdb.asia-southeast1.firebasedatabase.app"
-};
-
-if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const auth = firebase.auth();
-
-let state = { allMedia: [], apiKeys: [] };
-
-const ui = {
-    toggleSidebar: () => document.getElementById('sidebar').classList.toggle('active'),
-    toggleAdmin: () => document.getElementById('admin-panel').classList.toggle('hidden'),
-    switchTab: (tabName, event) => {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        document.getElementById(`tab-${tabName}`).classList.remove('hidden');
-        event.target.classList.add('active');
-        if(tabName === 'users') app.loadUsers();
-        if(tabName === 'config') app.loadApiKeys();
-    }
-};
+// ... (mantenha seu firebaseConfig inicial)
 
 const app = {
     init: () => {
-        app.loadCatalog();
-        app.loadApiKeys();
-    },
-
-    loadCatalog: () => {
-        db.ref('catalog').on('value', snapshot => {
-            const area = document.getElementById('catalog-area');
-            area.innerHTML = '';
-            if(!snapshot.exists()) return;
-            snapshot.forEach(child => {
-                const m = child.val();
-                area.innerHTML += `<div class="card" style="background-image:url(${m.img})"></div>`;
-            });
+        auth.onAuthStateChanged(user => {
+            if(user) {
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('app-content').classList.remove('hidden');
+                app.loadCatalog();
+                app.loadApiKeys();
+            } else {
+                document.getElementById('auth-screen').classList.remove('hidden');
+                document.getElementById('app-content').classList.add('hidden');
+            }
         });
     },
 
-    loadUsers: () => {
-        db.ref('users').on('value', snap => {
-            const list = document.getElementById('users-display-list');
-            list.innerHTML = '';
-            snap.forEach(child => {
-                const u = child.val();
-                list.innerHTML += `
-                    <div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #222;">
-                        <span>${u.email} (${u.phone || 'Sem Tel'})</span>
-                        <div>
-                            <a href="https://wa.me/55${u.phone?.replace(/\D/g,'')}" target="_blank" style="color:green; margin-right:10px;"><i class="fab fa-whatsapp"></i></a>
-                            <i class="fas fa-trash" onclick="app.deleteUser('${child.key}')" style="color:red;"></i>
-                        </div>
-                    </div>`;
+    login: () => {
+        const e = document.getElementById('login-email').value;
+        const p = document.getElementById('login-pass').value;
+        auth.signInWithEmailAndPassword(e,p).catch(err => alert("Erro ao logar"));
+    },
+
+    loadCatalog: () => {
+        db.ref('catalog').on('value', snap => {
+            const area = document.getElementById('catalog-area');
+            area.innerHTML = "";
+            const cats = ['Filmes', 'Séries', 'Kids'];
+            
+            cats.forEach(c => {
+                let html = `<div class="section-title">${c}</div><div class="carousel">`;
+                snap.forEach(child => {
+                    const m = child.val();
+                    if(m.category === c) {
+                        html += `<div class="card" style="background-image:url(${m.img})"></div>`;
+                    }
+                });
+                html += `</div>`;
+                area.innerHTML += html;
             });
         });
     },
 
     saveApiKey: () => {
-        const label = document.getElementById('api-label').value;
-        const value = document.getElementById('api-value').value;
-        const type = document.getElementById('api-type').value;
-        db.ref('settings/apiKeys').push({ label, value, type }).then(() => alert("Salvo!"));
+        const n = document.getElementById('api-name').value;
+        const k = document.getElementById('api-key').value;
+        db.ref('settings/apiKeys').push({ name: n, value: k }).then(() => {
+            alert("API Adicionada!");
+            app.loadApiKeys();
+        });
     },
 
     loadApiKeys: () => {
         db.ref('settings/apiKeys').on('value', snap => {
-            const list = document.getElementById('api-keys-list');
+            const list = document.getElementById('api-list-display');
             list.innerHTML = "";
-            snap.forEach(c => {
-                list.innerHTML += `<div style="padding:10px; border:1px solid #333;">${c.val().label} <i class="fas fa-trash" onclick="app.delKey('${c.key}')" style="float:right;"></i></div>`;
+            snap.forEach(child => {
+                const api = child.val();
+                list.innerHTML += `<div style="background:#222; padding:10px; margin-top:5px; border-radius:4px;">
+                    <strong>${api.name}:</strong> ${api.value} 
+                    <button onclick="app.delKey('${child.key}')" style="float:right; color:red; background:none; border:none;">X</button>
+                </div>`;
             });
         });
     },
 
     delKey: (id) => db.ref(`settings/apiKeys/${id}`).remove(),
-    deleteUser: (id) => db.ref(`users/${id}`).remove(),
-    logout: () => auth.signOut().then(() => location.reload())
+    logout: () => auth.signOut(),
+    register: () => { /* lógica de cadastro anterior */ }
+};
+
+const ui = {
+    toggleAdmin: () => document.getElementById('admin-panel').classList.toggle('hidden'),
+    switchTab: (id) => {
+        document.querySelectorAll('.admin-tab').forEach(t => t.classList.add('hidden'));
+        document.getElementById(`tab-${id}`).classList.remove('hidden');
+    },
+    toggleAuth: () => {
+        document.getElementById('login-form').classList.toggle('hidden');
+        document.getElementById('register-form').classList.toggle('hidden');
+    }
 };
 
 window.onload = app.init;
