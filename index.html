@@ -18,7 +18,7 @@
     <header>
         <div class="header-left">
             <i class="fas fa-bars" id="menu-btn" onclick="ui.toggleSidebar()"></i>
-            <div class="logo">MASTER<br>FLIX</div>
+            <div class="logo" onclick="location.reload()">MASTER<br>FLIX</div>
         </div>
         
         <div class="search-wrapper">
@@ -26,7 +26,7 @@
             <input type="text" id="search-input" placeholder="Títulos, Gêneros..." onkeyup="app.search()">
         </div>
 
-        <button id="btn-master" class="btn-gold hidden" onclick="ui.toggleAdmin()">
+        <button id="btn-master" class="btn-gold" onclick="ui.toggleAdmin()">
             <i class="fas fa-crown"></i> PAINEL
         </button>
     </header>
@@ -44,14 +44,10 @@
                 <li onclick="app.filterByCat('Ação')">Ação</li>
                 <li onclick="app.filterByCat('Terror')">Terror</li>
                 <li onclick="app.filterByCat('Comédia')">Comédia</li>
-                <li onclick="app.filterByCat('Drama')">Drama</li>
             </ul>
 
             <li onclick="app.filterByCat('Séries')"><i class="fas fa-tv"></i> Séries</li>
             <li onclick="app.filterByCat('Infantil')"><i class="fas fa-child"></i> Kids</li>
-            <li style="border-top: 1px solid #333; margin-top: 20px; color: var(--red);" onclick="auth.signOut()">
-                <i class="fas fa-sign-out-alt"></i> Sair
-            </li>
         </ul>
     </nav>
 
@@ -59,7 +55,7 @@
         <div id="admin-panel" class="admin-container hidden">
             <div class="admin-header">
                 <h2><i class="fas fa-cogs"></i> CENTRAL MASTER</h2>
-                <button onclick="ui.toggleAdmin()" style="background:none; border:none; color:white;">✕</button>
+                <button onclick="ui.toggleAdmin()" style="background:none; border:none; color:white; font-size:20px;">✕</button>
             </div>
             
             <div class="tabs">
@@ -72,10 +68,12 @@
                     <input type="text" id="tmdb-id" placeholder="ID do TMDB (Ex: 550)">
                     <button onclick="app.fetchTMDB()" class="btn-check">CHECAR</button>
                 </div>
-                <input type="text" id="manual-cat" placeholder="Categoria (Ex: Terror, Ação...)">
-                <input type="text" id="video-url" placeholder="Link Direto do Vídeo (.mp4)">
+                <input type="text" id="manual-cat" placeholder="Categoria (Ex: Ação, Terror...)">
+                <input type="text" id="video-url" placeholder="Link do Vídeo (.mp4)">
+                
                 <div id="preview-area"></div>
-                <button onclick="app.postMedia()" class="btn-save">PUBLICAR NO APP</button>
+                
+                <button onclick="app.postMedia()" class="btn-save" style="margin-top:10px;">PUBLICAR NO APP</button>
             </div>
 
             <div id="tab-users" class="tab-content hidden">
@@ -91,16 +89,12 @@
         <div class="modal-card" onclick="event.stopPropagation()">
             <div id="modal-cover" class="modal-hero"></div>
             <div class="modal-info">
-                <h1 id="modal-title">Titulo do Filme</h1>
-                <div class="modal-meta">
-                    <span id="modal-cat" class="tag">Gênero</span>
-                </div>
-                <p id="modal-desc">Descrição do filme...</p>
-                <div class="modal-actions">
-                    <button class="btn-play" onclick="ui.startPlayer()">
-                        <i class="fas fa-play"></i> ASSISTIR
-                    </button>
-                </div>
+                <h1 id="modal-title">Titulo</h1>
+                <div class="modal-meta"><span id="modal-cat" class="tag">Gênero</span></div>
+                <p id="modal-desc">Descrição...</p>
+                <button class="btn-play" onclick="ui.startPlayer()">
+                    <i class="fas fa-play"></i> ASSISTIR
+                </button>
             </div>
         </div>
     </div>
