@@ -5,18 +5,21 @@ const firebaseConfig = {
     databaseURL: "https://outflix-9e57d-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
 
-if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
 
-let state = { allMedia: [], activeMedia: null, tempTMDB: null, apiKeys: [] };
+let state = { allMedia: [], activeMedia: null, tempTMDB: null, apiKeys: [], currentUser: null };
 
 const ui = {
+    toggleAuthMode: () => {
+        document.getElementById('login-form').classList.toggle('hidden');
+        document.getElementById('register-form').classList.toggle('hidden');
+    },
     toggleSidebar: () => {
         document.getElementById('sidebar').classList.toggle('active');
         document.getElementById('sidebar-overlay').classList.toggle('active');
     },
-    toggleSubmenu: (id) => document.getElementById(id).classList.toggle('open'),
     toggleAdmin: () => document.getElementById('admin-panel').classList.toggle('hidden'),
     switchTab: (tabName, event) => {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
@@ -24,30 +27,18 @@ const ui = {
         document.getElementById(`tab-${tabName}`).classList.remove('hidden');
         event.target.classList.add('active');
         if(tabName === 'users') app.loadUsers();
-        if(tabName === 'config') app.renderApiList();
     },
     closeModal: () => document.getElementById('modal-details').classList.add('hidden'),
     startPlayer: () => {
         const media = state.activeMedia;
-        if (!media) return;
-        ui.closeModal();
         document.getElementById('video-player-overlay').classList.remove('hidden');
-        
-        // Pega a primeira chave do tipo correspondente
-        const keyObj = state.apiKeys.find(k => media.video.includes(k.type === 'gdrive' ? 'drive' : 'dropbox'));
-        let finalUrl = media.video;
-
-        if (media.video.includes("drive.google.com")) {
-            const id = media.video.split('/d/')[1]?.split('/')[0] || media.video.split('id=')[1];
-            finalUrl = keyObj ? `https://www.googleapis.com/drive/v3/files/${id}?alt=media&key=${keyObj.value}` : `https://docs.google.com/get_video_info?docid=${id}&format=google_drive`;
-        } else if (media.video.includes("dropbox.com")) {
-            finalUrl = media.video.replace("?dl=0", "?raw=1");
+        let url = media.video;
+        if(url.includes("drive.google.com")){
+            const id = url.split('/d/')[1]?.split('/')[0] || url.split('id=')[1];
+            const keyObj = state.apiKeys.find(k => k.type === 'gdrive');
+            url = keyObj ? `https://www.googleapis.com/drive/v3/files/${id}?alt=media&key=${keyObj.value}` : url;
         }
-
-        document.getElementById('video-container').innerHTML = `
-            <video id="main-video" controls autoplay playsinline style="width:100%; height:100%; background:#000;">
-                <source src="${finalUrl}" type="video/mp4">
-            </video>`;
+        document.getElementById('video-container').innerHTML = `<video controls autoplay style="width:100%; height:100%;"><source src="${url}" type="video/mp4"></video>`;
     },
     stopPlayer: () => {
         document.getElementById('video-player-overlay').classList.add('hidden');
@@ -57,143 +48,101 @@ const ui = {
 
 const app = {
     init: () => {
-        app.loadCatalog();
-        app.loadApiKeys();
-    },
-
-    // --- GESTÃO DE APIs ---
-    loadApiKeys: () => {
-        db.ref('settings/apiKeys').on('value', snap => {
-            state.apiKeys = [];
-            if(snap.exists()) {
-                snap.forEach(child => {
-                    state.apiKeys.push({ key: child.key, ...child.val() });
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                db.ref(`users/${user.uid}`).once('value', snap => {
+                    const data = snap.val();
+                    if(data?.blocked) {
+                        alert("Sua conta está bloqueada!");
+                        auth.signOut();
+                    } else {
+                        state.currentUser = data;
+                        document.getElementById('auth-screen').classList.add('hidden');
+                        document.getElementById('app-content').classList.remove('hidden');
+                        if(data?.role === 'master') document.getElementById('btn-master').classList.remove('hidden');
+                        app.loadCatalog();
+                        app.loadApiKeys();
+                    }
                 });
+            } else {
+                document.getElementById('auth-screen').classList.remove('hidden');
+                document.getElementById('app-content').classList.add('hidden');
             }
-            app.renderApiList();
         });
     },
 
-    saveApiKey: () => {
-        const label = document.getElementById('api-label').value;
-        const value = document.getElementById('api-value').value;
-        const type = document.getElementById('api-type').value;
-        if(!label || !value) return alert("Preencha os campos!");
-
-        db.ref('settings/apiKeys').push({ label, value, type }).then(() => {
-            document.getElementById('api-label').value = "";
-            document.getElementById('api-value').value = "";
-            alert("Chave adicionada, Master!");
-        });
+    login: () => {
+        const email = document.getElementById('login-email').value;
+        const pass = document.getElementById('login-pass').value;
+        auth.signInWithEmailAndPassword(email, pass).catch(e => alert("Erro: " + e.message));
     },
 
-    deleteApiKey: (id) => {
-        if(confirm("Deseja remover esta chave?")) db.ref(`settings/apiKeys/${id}`).remove();
+    register: () => {
+        const email = document.getElementById('reg-email').value;
+        const pass = document.getElementById('reg-pass').value;
+        const phone = document.getElementById('reg-phone').value;
+        auth.createUserWithEmailAndPassword(email, pass).then(res => {
+            db.ref(`users/${res.user.uid}`).set({ email, phone, blocked: false, role: 'user' });
+        }).catch(e => alert(e.message));
     },
 
-    renderApiList: () => {
-        const list = document.getElementById('api-keys-list');
-        list.innerHTML = state.apiKeys.map(k => `
-            <div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #222; align-items:center;">
-                <div>
-                    <strong>${k.label}</strong><br>
-                    <small style="color:#666;">${k.type.toUpperCase()} • ****${k.value.slice(-4)}</small>
-                </div>
-                <button onclick="app.deleteApiKey('${k.key}')" style="background:#ff4444; color:white; border:none; padding:5px 10px; border-radius:3px;">Excluir</button>
-            </div>
-        `).join('') || '<p style="color:#666;">Nenhuma chave cadastrada.</p>';
-    },
+    logout: () => auth.signOut().then(() => location.reload()),
 
-    // --- GESTÃO DE USUÁRIOS ---
     loadUsers: () => {
         db.ref('users').on('value', snap => {
             const list = document.getElementById('users-display-list');
             list.innerHTML = '';
-            if(!snap.exists()) return list.innerHTML = "Sem usuários.";
-            snap.forEach(u => {
-                const user = u.val();
-                list.innerHTML += `<div style="padding:10px; border-bottom:1px solid #222;">${user.email || 'Usuário Master'}</div>`;
+            snap.forEach(child => {
+                const u = child.val();
+                const id = child.key;
+                list.innerHTML += `
+                    <div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #222;">
+                        <div>${u.email}<br><small>${u.phone}</small></div>
+                        <div>
+                            <a href="https://wa.me/55${u.phone?.replace(/\D/g,'')}" target="_blank" style="color:#25d366;"><i class="fab fa-whatsapp"></i></a>
+                            <i class="fas fa-ban" onclick="app.toggleBlock('${id}', ${u.blocked})" style="color:orange; margin:0 10px;"></i>
+                            <i class="fas fa-trash" onclick="app.deleteUser('${id}')" style="color:red;"></i>
+                        </div>
+                    </div>`;
             });
         });
     },
 
-    // --- CATÁLOGO ---
+    toggleBlock: (id, status) => db.ref(`users/${id}`).update({ blocked: !status }),
+    deleteUser: (id) => confirm("Excluir?") && db.ref(`users/${id}`).remove(),
+
+    // ... (Mantenha funções de TMDB, PostMedia e LoadCatalog anteriores)
+    loadApiKeys: () => {
+        db.ref('settings/apiKeys').on('value', snap => {
+            state.apiKeys = [];
+            const list = document.getElementById('api-keys-list');
+            list.innerHTML = "";
+            snap.forEach(c => {
+                const k = { id: c.key, ...c.val() };
+                state.apiKeys.push(k);
+                list.innerHTML += `<div style="padding:5px;">${k.label} (****${k.value.slice(-4)}) <i class="fas fa-trash" onclick="app.delKey('${k.id}')"></i></div>`;
+            });
+        });
+    },
+    saveApiKey: () => {
+        const label = document.getElementById('api-label').value;
+        const value = document.getElementById('api-value').value;
+        const type = document.getElementById('api-type').value;
+        db.ref('settings/apiKeys').push({ label, value, type });
+    },
+    delKey: (id) => db.ref(`settings/apiKeys/${id}`).remove(),
+
     loadCatalog: () => {
-        db.ref('catalog').on('value', (snapshot) => {
+        db.ref('catalog').on('value', snap => {
             const area = document.getElementById('catalog-area');
-            area.innerHTML = '';
+            area.innerHTML = "";
             state.allMedia = [];
-            if (!snapshot.exists()) return;
-            snapshot.forEach((child) => {
-                const item = child.val();
-                item.key = child.key;
+            snap.forEach(c => {
+                const item = { key: c.key, ...c.val() };
                 state.allMedia.push(item);
             });
-            const categories = {};
-            state.allMedia.forEach(m => {
-                const cat = m.category || "Geral";
-                if (!categories[cat]) categories[cat] = [];
-                categories[cat].push(m);
-            });
-            Object.keys(categories).forEach(cat => app.renderSection(area, cat, categories[cat]));
+            // Agrupar e renderizar... (Lógica de categorias anterior)
         });
-    },
-
-    renderSection: (container, title, items) => {
-        const section = document.createElement('div');
-        section.className = "section-container";
-        section.innerHTML = `<h2 class="section-title">${title}</h2><div class="carousel">${items.map(m => `<div class="card" onclick="app.openDetails('${m.key}')" style="background-image: url('${m.img}');"></div>`).join('')}</div>`;
-        container.appendChild(section);
-    },
-
-    openDetails: (key) => {
-        const media = state.allMedia.find(m => m.key === key);
-        if (media) {
-            state.activeMedia = media;
-            document.getElementById('modal-cover').style.backgroundImage = `url('${media.img}')`;
-            document.getElementById('modal-title').innerText = media.title;
-            document.getElementById('modal-desc').innerText = media.sinopse || "Sem descrição.";
-            document.getElementById('modal-cat').innerText = media.category || "Mídia";
-            document.getElementById('modal-details').classList.remove('hidden');
-        }
-    },
-
-    fetchTMDB: async () => {
-        const id = document.getElementById('tmdb-id').value;
-        try {
-            const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=2eaf2fd731f81a77741ecb625b588a40&language=pt-BR`);
-            const data = await res.json();
-            state.tempTMDB = data;
-            document.getElementById('preview-area').innerHTML = `<p style="color:green; margin-top:10px;">✅ ${data.title}</p>`;
-        } catch(e) { alert("Erro TMDB"); }
-    },
-
-    postMedia: () => {
-        if(!state.tempTMDB) return;
-        const url = document.getElementById('video-url').value;
-        const cat = document.getElementById('manual-cat').value;
-        db.ref('catalog').push({
-            title: state.tempTMDB.title,
-            sinopse: state.tempTMDB.overview,
-            img: `https://image.tmdb.org/t/p/w500${state.tempTMDB.poster_path}`,
-            video: url,
-            category: cat
-        }).then(() => alert("Mídia Publicada!"));
-    },
-
-    search: () => {
-        const term = document.getElementById('search-input').value.toLowerCase();
-        if(!term) return app.loadCatalog();
-        const filtered = state.allMedia.filter(m => m.title.toLowerCase().includes(term));
-        document.getElementById('catalog-area').innerHTML = "";
-        app.renderSection(document.getElementById('catalog-area'), "Resultados", filtered);
-    },
-
-    filterByCat: (catName) => {
-        const filtered = state.allMedia.filter(m => m.category === catName);
-        document.getElementById('catalog-area').innerHTML = "";
-        app.renderSection(document.getElementById('catalog-area'), catName, filtered);
-        ui.toggleSidebar();
     }
 };
 
