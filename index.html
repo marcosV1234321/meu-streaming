@@ -12,72 +12,81 @@
 </head>
 <body>
 
-    <header>
-        <div class="header-left">
-            <i class="fas fa-bars" onclick="ui.toggleSidebar()"></i>
-            <div class="logo" onclick="location.reload()">MASTER<br>FLIX</div>
+    <div id="auth-screen" class="auth-overlay">
+        <div class="auth-box">
+            <h1 class="netflix-logo">MASTER FLIX</h1>
+            <div id="login-form">
+                <input type="email" id="login-email" placeholder="Email ou número de telefone">
+                <input type="password" id="login-pass" placeholder="Senha">
+                <button onclick="app.login()" class="btn-netflix">Entrar</button>
+                <p onclick="ui.toggleAuth()">Novo por aqui? <span>Assine agora.</span></p>
+            </div>
+            <div id="register-form" class="hidden">
+                <input type="email" id="reg-email" placeholder="Email">
+                <input type="password" id="reg-pass" placeholder="Senha">
+                <input type="tel" id="reg-phone" placeholder="WhatsApp (DDD + número)">
+                <button onclick="app.register()" class="btn-netflix">Cadastrar</button>
+                <p onclick="ui.toggleAuth()">Já tem conta? <span>Entrar.</span></p>
+            </div>
         </div>
-        <div class="search-wrapper">
-            <i class="fas fa-search"></i>
-            <input type="text" id="search-input" placeholder="Pesquisar..." onkeyup="app.search()">
-        </div>
-        <button id="btn-master" class="btn-gold" onclick="ui.toggleAdmin()">
-            <i class="fas fa-crown"></i> PAINEL
-        </button>
-    </header>
+    </div>
 
-    <nav id="sidebar">
-        <ul class="menu-items">
-            <li onclick="location.reload()"><i class="fas fa-home"></i> Início</li>
-            <li onclick="app.filterByCat('Séries')"><i class="fas fa-tv"></i> Séries</li>
-            <li onclick="app.filterByCat('Kids')"><i class="fas fa-child"></i> Kids</li>
-            <hr style="border:0; border-top:1px solid #333; margin:10px 0;">
-            <li onclick="app.logout()" style="color: #ff4444;"><i class="fas fa-sign-out-alt"></i> Sair</li>
-        </ul>
-    </nav>
+    <div id="app-content" class="hidden">
+        <header>
+            <div class="header-left">
+                <div class="logo">MASTER FLIX</div>
+                <nav class="nav-links">
+                    <span onclick="location.reload()">Início</span>
+                    <span onclick="app.filterByCat('Séries')">Séries</span>
+                    <span onclick="app.filterByCat('Filmes')">Filmes</span>
+                    <span onclick="app.filterByCat('Kids')">Bombando</span>
+                </nav>
+            </div>
+            <div class="header-right">
+                <i class="fas fa-search"></i>
+                <button class="btn-admin-icon" onclick="ui.toggleAdmin()"><i class="fas fa-crown"></i></button>
+                <button class="btn-logout" onclick="app.logout()">Sair</button>
+            </div>
+        </header>
 
-    <main>
+        <main id="catalog-area">
+            </main>
+
         <div id="admin-panel" class="admin-container hidden">
             <div class="admin-header">
-                <h2>ADMINISTRAÇÃO</h2>
+                <h2>Gerenciar Catálogo</h2>
                 <button onclick="ui.toggleAdmin()">✕</button>
             </div>
-            <div class="tabs">
-                <button class="tab-btn active" onclick="ui.switchTab('media', event)">POSTAR</button>
-                <button class="tab-btn" onclick="ui.switchTab('users', event)">USUÁRIOS</button>
-                <button class="tab-btn" onclick="ui.switchTab('config', event)">APIs</button>
+            <div class="admin-tabs">
+                <button onclick="ui.switchTab('post')">Postar</button>
+                <button onclick="ui.switchTab('users')">Usuários</button>
+                <button onclick="ui.switchTab('apis')">Config APIs</button>
             </div>
 
-            <div id="tab-media" class="tab-content">
+            <div id="tab-post" class="admin-tab">
                 <input type="text" id="tmdb-id" placeholder="ID TMDB">
-                <button onclick="app.fetchTMDB()" class="btn-check">BUSCAR</button>
-                <select id="manual-cat" class="admin-input">
+                <input type="text" id="video-url" placeholder="Link do Vídeo">
+                <select id="manual-cat">
                     <option value="Filmes">Filmes</option>
                     <option value="Séries">Séries</option>
                     <option value="Kids">Kids</option>
                 </select>
-                <input type="text" id="video-url" placeholder="Link do Vídeo">
-                <div id="preview-area"></div>
-                <button onclick="app.postMedia()" class="btn-save">PUBLICAR</button>
+                <button onclick="app.postMedia()" class="btn-save">Publicar</button>
             </div>
 
-            <div id="tab-users" class="tab-content hidden">
-                <div id="users-display-list" class="list-container"></div>
+            <div id="tab-users" class="admin-tab hidden">
+                <div id="users-list"></div>
             </div>
 
-            <div id="tab-config" class="tab-content hidden">
-                <input type="text" id="api-label" placeholder="Nome da Chave">
-                <input type="password" id="api-value" placeholder="Chave de API">
-                <select id="api-type">
-                    <option value="gdrive">Google Drive</option>
-                </select>
-                <button onclick="app.saveApiKey()" class="btn-save">SALVAR CHAVE</button>
-                <div id="api-keys-list" style="margin-top:20px;"></div>
-            </div>
+            <div id="tab-apis" class="admin-tab hidden">
+                <div class="api-inputs">
+                    <input type="text" id="api-name" placeholder="Nome da Chave">
+                    <input type="text" id="api-key" placeholder="Valor da Chave">
+                    <button onclick="app.saveApiKey()">Adicionar</button>
+                </div>
+                <div id="api-list-display"></div> </div>
         </div>
-
-        <div id="catalog-area"></div>
-    </main>
+    </div>
 
     <script src="script.js"></script>
 </body>
