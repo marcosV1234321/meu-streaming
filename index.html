@@ -6,7 +6,6 @@
     <title>MASTER FLIX PRO</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
@@ -40,26 +39,46 @@
                 <li onclick="app.filterByCat('Terror')">Terror</li>
                 <li onclick="app.filterByCat('Comédia')">Comédia</li>
             </ul>
+            <li onclick="app.filterByCat('Séries')"><i class="fas fa-tv"></i> Séries</li>
+            <li onclick="app.filterByCat('Documentários')"><i class="fas fa-file-video"></i> Documentários</li>
+            <li onclick="app.filterByCat('Kids')"><i class="fas fa-child"></i> Kids</li>
         </ul>
     </nav>
 
     <main>
         <div id="admin-panel" class="admin-container hidden">
             <div class="admin-header">
-                <h2>ADMINISTRAÇÃO</h2>
+                <h2>ADMINISTRAÇÃO MASTER</h2>
                 <button onclick="ui.toggleAdmin()">✕</button>
             </div>
+            
             <div class="tabs">
                 <button class="tab-btn active" onclick="ui.switchTab('media', event)">POSTAR</button>
-                <button class="tab-btn" onclick="ui.switchTab('users', event)">USUÁRIOS</button>
+                <button class="tab-btn" onclick="ui.switchTab('config', event)">APIs / CHAVES</button>
             </div>
+
             <div id="tab-media" class="tab-content">
-                <input type="text" id="tmdb-id" placeholder="ID TMDB">
-                <button onclick="app.fetchTMDB()" class="btn-check">BUSCAR DADOS</button>
-                <input type="text" id="manual-cat" placeholder="Categoria">
-                <input type="text" id="video-url" placeholder="Link (Drive, Dropbox ou .mp4)">
+                <div class="input-group">
+                    <input type="text" id="tmdb-id" placeholder="ID TMDB (Ex: 550)">
+                    <button onclick="app.fetchTMDB()" class="btn-check">BUSCAR</button>
+                </div>
+                <select id="manual-cat" class="admin-input">
+                    <option value="Filmes">Filmes</option>
+                    <option value="Séries">Séries</option>
+                    <option value="Documentários">Documentários</option>
+                    <option value="Kids">Kids</option>
+                </select>
+                <input type="text" id="video-url" placeholder="Link do Vídeo (Drive, Drop ou MP4)">
                 <div id="preview-area"></div>
-                <button onclick="app.postMedia()" class="btn-save">PUBLICAR AGORA</button>
+                <button onclick="app.postMedia()" class="btn-save">PUBLICAR CONTEÚDO</button>
+            </div>
+
+            <div id="tab-config" class="tab-content hidden">
+                <label>Google Drive API Key:</label>
+                <input type="password" id="gdrive-key" placeholder="Insira sua chave Google">
+                <label>Dropbox Access Token:</label>
+                <input type="password" id="dropbox-token" placeholder="Insira seu token Dropbox">
+                <button onclick="app.saveApiKeys()" class="btn-save">SALVAR CHAVES</button>
             </div>
         </div>
 
@@ -72,7 +91,8 @@
             <div class="modal-info">
                 <h1 id="modal-title"></h1>
                 <div class="modal-meta"><span id="modal-cat" class="tag"></span></div>
-                <p id="modal-desc"></p> <button class="btn-play" onclick="ui.startPlayer()">
+                <p id="modal-desc" style="max-height: 150px; overflow-y: auto;"></p>
+                <button class="btn-play" onclick="ui.startPlayer()">
                     <i class="fas fa-play"></i> ASSISTIR
                 </button>
             </div>
@@ -87,4 +107,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-
