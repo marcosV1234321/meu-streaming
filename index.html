@@ -15,81 +15,77 @@
     <div id="auth-screen" class="auth-overlay">
         <div class="auth-box">
             <h1 class="logo-text">MASTER FLIX</h1>
-            
             <div id="login-form">
                 <input type="email" id="login-email" placeholder="E-mail">
                 <input type="password" id="login-pass" placeholder="Senha">
                 <button onclick="app.login()" class="btn-main">ENTRAR</button>
-                <p class="toggle-text">Novo por aqui? <span onclick="ui.toggleAuth()">Cadastre-se agora.</span></p>
+                <p class="toggle-text">Novo por aqui? <span onclick="ui.toggleAuth()">Cadastre-se.</span></p>
             </div>
-
             <div id="register-form" class="hidden">
                 <input type="email" id="reg-email" placeholder="E-mail">
                 <input type="password" id="reg-pass" placeholder="Senha">
                 <input type="tel" id="reg-phone" placeholder="WhatsApp (DDD + Número)">
                 <button onclick="app.register()" class="btn-main">CRIAR CONTA</button>
-                <p class="toggle-text">Já tem conta? <span onclick="ui.toggleAuth()">Faça Login.</span></p>
+                <p class="toggle-text">Já tem conta? <span onclick="ui.toggleAuth()">Entrar.</span></p>
             </div>
         </div>
     </div>
 
     <div id="app-content" class="hidden">
         <header>
-            <div class="logo" onclick="location.reload()">MASTER FLIX</div>
+            <div class="header-left">
+                <i class="fas fa-bars menu-icon" onclick="ui.toggleSidebar()"></i>
+                <div class="logo">MASTER FLIX</div>
+            </div>
             <div class="header-tools">
-                <button class="btn-adm" onclick="ui.toggleAdmin()"><i class="fas fa-crown"></i> PAINEL</button>
+                <button class="btn-adm hidden" id="admin-btn" onclick="ui.toggleAdmin()"><i class="fas fa-crown"></i></button>
                 <button class="btn-out" onclick="app.logout()">SAIR</button>
             </div>
         </header>
 
-        <main id="catalog-area">
-            </main>
+        <nav id="sidebar" class="sidebar-nav">
+            <div class="sidebar-header">MENU <i class="fas fa-times" onclick="ui.toggleSidebar()"></i></div>
+            <ul class="nav-links">
+                <li onclick="location.reload()"><i class="fas fa-home"></i> Início</li>
+                <li onclick="app.filterCat('Filmes')"><i class="fas fa-film"></i> Filmes</li>
+                <li onclick="app.filterCat('Séries')"><i class="fas fa-tv"></i> Séries</li>
+                <li onclick="app.filterCat('Kids')"><i class="fas fa-child"></i> Kids</li>
+            </ul>
+        </nav>
+
+        <main id="catalog-area"></main>
 
         <div id="admin-panel" class="admin-container hidden">
             <div class="admin-nav">
                 <button onclick="ui.switchTab('tab-post')">POSTAR</button>
                 <button onclick="ui.switchTab('tab-users')">USUÁRIOS</button>
                 <button onclick="ui.switchTab('tab-apis')">APIs</button>
-                <button onclick="ui.toggleAdmin()" class="btn-close-admin">FECHAR</button>
+                <button onclick="ui.toggleAdmin()" class="btn-close">X</button>
             </div>
-
             <div id="tab-post" class="admin-tab">
-                <h3>Postar Novo Conteúdo</h3>
-                <input type="text" id="tmdb-id" placeholder="ID TMDB (Ex: 550)">
-                <button onclick="app.fetchTMDB()" class="btn-search">BUSCAR TMDB</button>
-                <div id="preview-movie" class="preview-info"></div>
-                <input type="text" id="video-url" placeholder="Link do Vídeo (Drive, Dropbox, .mp4)">
-                <select id="manual-cat" class="admin-select">
+                <input type="text" id="tmdb-id" placeholder="ID TMDB">
+                <button onclick="app.fetchTMDB()">BUSCAR</button>
+                <input type="text" id="video-url" placeholder="Link do Vídeo">
+                <select id="manual-cat">
                     <option value="Filmes">Filmes</option>
                     <option value="Séries">Séries</option>
                     <option value="Kids">Kids</option>
                 </select>
-                <button onclick="app.postMedia()" class="btn-save">PUBLICAR MÍDIA</button>
+                <button onclick="app.postMedia()" class="btn-save">PUBLICAR</button>
             </div>
-
-            <div id="tab-users" class="admin-tab hidden">
-                <h3>Gerenciar Usuários</h3>
-                <div id="list-users" class="list-box">
-                    </div>
-            </div>
-
+            <div id="tab-users" class="admin-tab hidden"><div id="list-users" class="list-box"></div></div>
             <div id="tab-apis" class="admin-tab hidden">
-                <h3>Gerenciar Chaves de API</h3>
-                <div class="api-form">
-                    <input type="text" id="api-name" placeholder="Nome da Chave (ex: Google Drive 01)">
-                    <input type="text" id="api-val" placeholder="Chave de API / Token">
-                    <button onclick="app.saveApiKey()" class="btn-save">SALVAR CHAVE</button>
-                </div>
-                <div id="list-apis" class="list-box">
-                    </div>
+                <input type="text" id="api-name" placeholder="Nome">
+                <input type="text" id="api-val" placeholder="Chave/Link">
+                <button onclick="app.saveApiKey()">SALVAR</button>
+                <div id="list-apis" class="list-box"></div>
             </div>
         </div>
     </div>
 
-    <div id="player-modal" class="player-overlay hidden">
-        <span class="close-player-btn" onclick="ui.closePlayer()">✕</span>
-        <div id="video-inside" class="video-container">
-            </div>
+    <div id="player-modal" class="hidden">
+        <span class="close-p" onclick="ui.closePlayer()">✕</span>
+        <div id="video-inside"></div>
     </div>
 
     <script src="script.js"></script>
