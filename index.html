@@ -11,154 +11,101 @@
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
 
     <style>
-        :root { --red: #e50914; --dark: #0a0a0a; --gold: #ffc107; --gray: #1f1f1f; --light: #f5f5f5; }
+        :root { --red: #e50914; --dark: #0a0a0a; --gold: #ffc107; --gray: #1a1a1a; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
         body { background: var(--dark); color: white; overflow-x: hidden; }
         .hidden { display: none !important; }
 
-        /* HEADER PREMIUM */
-        header { position: fixed; top: 0; width: 100%; height: 70px; background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.8) 100%); display: flex; align-items: center; justify-content: space-between; padding: 0 4%; z-index: 1000; transition: 0.5s; }
-        .header-left { display: flex; align-items: center; gap: 20px; }
-        .logo { color: var(--red); font-size: 1.6rem; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: -1px; }
+        /* HEADER CONFORME SEU PRINT */
+        header { position: fixed; top: 0; width: 100%; height: 70px; background: #000; display: flex; align-items: center; justify-content: space-between; padding: 0 4%; z-index: 1000; border-bottom: 1px solid #222; }
+        .logo { color: var(--red); font-size: 1.4rem; font-weight: 900; line-height: 1.1; text-transform: uppercase; cursor: pointer; }
         
-        .header-right { display: flex; align-items: center; gap: 15px; }
-        .search-box { background: rgba(0,0,0,0.6); border: 1px solid #444; display: flex; align-items: center; padding: 5px 10px; border-radius: 4px; }
-        #search-input { background: transparent; border: none; color: white; padding: 5px; outline: none; width: 180px; font-size: 14px; }
-        .admin-btn { background: var(--gold); border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; color: black; font-size: 12px; transition: 0.3s; }
-        .admin-btn:hover { background: #eab308; transform: scale(1.05); }
+        .search-container { position: relative; flex: 1; max-width: 250px; margin: 0 20px; }
+        .search-container i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #888; }
+        #search-input { width: 100%; background: #141414; border: 1px solid #333; color: white; padding: 10px 10px 10px 35px; border-radius: 4px; outline: none; font-size: 14px; }
 
-        /* SIDEBAR ROBUSTA */
-        #sidebar { position: fixed; left: -300px; top: 0; width: 280px; height: 100vh; background: #000; z-index: 3000; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); border-right: 1px solid #222; overflow-y: auto; }
-        #sidebar.open { left: 0; }
-        .menu-list { list-style: none; padding-top: 90px; }
-        .menu-list li { padding: 16px 30px; cursor: pointer; display: flex; align-items: center; gap: 15px; font-size: 1rem; border-bottom: 1px solid #111; color: #bbb; transition: 0.2s; }
-        .menu-list li i { width: 20px; }
-        .menu-list li:hover { background: var(--gray); color: white; border-left: 4px solid var(--red); }
-        
-        .submenu { background: #080808; display: none; list-style: none; }
-        .submenu li { padding: 12px 30px 12px 65px; font-size: 0.9rem; border: none; }
-        .submenu.active { display: block; }
+        .btn-painel { background: var(--gold); border: none; padding: 10px 15px; border-radius: 4px; font-weight: bold; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
 
-        /* CATALOGO NETFLIX STYLE */
-        .content-area { padding: 100px 4% 40px; }
-        .section-container { margin-bottom: 35px; }
-        .section-title { font-size: 1.4rem; margin-bottom: 15px; color: #e5e5e5; font-weight: bold; display: flex; align-items: center; gap: 10px; }
-        .carousel-cards { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0 20px; scrollbar-width: none; scroll-behavior: smooth; }
-        .carousel-cards::-webkit-scrollbar { display: none; }
+        /* PAINEL MASTER ROBUSTO */
+        .admin-box { background: var(--gray); margin: 90px 4% 20px; padding: 25px; border-radius: 8px; border: 1px solid var(--gold); }
+        .admin-box h2 { color: var(--gold); text-align: center; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
         
-        .card { width: 160px; height: 240px; flex: 0 0 auto; background-size: cover; background-position: center; border-radius: 4px; cursor: pointer; transition: 0.4s; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        .card:hover { transform: scale(1.1); z-index: 10; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
+        .admin-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .tab-btn { background: #333; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .tab-btn.active { background: white; color: black; }
+
+        .admin-box input, .admin-box select { width: 100%; padding: 14px; margin-bottom: 12px; background: #000; border: 1px solid #444; color: white; border-radius: 4px; font-size: 15px; }
+        .btn-publicar { width: 100%; padding: 16px; background: var(--red); color: white; border: none; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-size: 16px; }
+
+        /* CATALOGO NETFLIX */
+        .catalog-container { padding: 20px 4% 100px; }
+        .section-title { font-size: 1.4rem; font-weight: bold; margin: 25px 0 15px; display: flex; align-items: center; gap: 10px; }
+        .row { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 15px; scrollbar-width: none; }
+        .card { width: 150px; height: 220px; flex: 0 0 auto; background-size: cover; background-position: center; border-radius: 6px; cursor: pointer; transition: 0.3s; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .card:hover { transform: scale(1.08); z-index: 10; }
         .card-progress { position: absolute; bottom: 0; left: 0; height: 4px; background: var(--red); border-radius: 0 2px 2px 0; }
 
-        /* PAINEL ADMINISTRATIVO MASTER */
-        .admin-box { background: #181818; padding: 25px; border-radius: 10px; margin-bottom: 40px; border: 1px solid var(--gold); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .admin-tabs { display: flex; gap: 20px; border-bottom: 1px solid #333; margin-bottom: 20px; }
-        .tab-link { padding: 10px 0; background: none; border: none; color: #888; cursor: pointer; font-weight: bold; position: relative; }
-        .tab-link.active { color: var(--gold); }
-        .tab-link.active::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; background: var(--gold); }
-        
-        .admin-box input, .admin-box select { width: 100%; padding: 14px; margin: 10px 0; background: #080808; border: 1px solid #333; color: white; border-radius: 5px; outline: none; }
-        .btn-post { background: var(--red); color: white; border: none; padding: 15px; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-
-        /* MODAIS E PLAYER */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 5000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .modal-content { background: #181818; width: 95%; max-width: 650px; border-radius: 12px; overflow: hidden; position: relative; }
-        .modal-body { padding: 30px; }
-        #player-overlay { position: fixed; inset: 0; background: #000; z-index: 9000; }
-        .close-player { position: absolute; top: 25px; right: 25px; color: white; font-size: 30px; cursor: pointer; z-index: 10000; background: var(--red); border: none; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; }
-
-        /* ESTILO LISTA DE USUARIOS */
-        .user-item { background: #111; padding: 15px; border-radius: 6px; margin-bottom: 10px; border-left: 5px solid var(--gold); display: flex; justify-content: space-between; align-items: center; }
-        .user-info p { font-size: 14px; color: #eee; }
-        .user-actions { display: flex; gap: 10px; }
-        .btn-u { padding: 8px; border-radius: 4px; border: none; cursor: pointer; color: white; }
+        /* PLAYER E MODAIS */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+        .modal-content { background: #181818; width: 90%; max-width: 550px; border-radius: 12px; overflow: hidden; border: 1px solid #333; }
+        #player-overlay { position: fixed; inset: 0; background: #000; z-index: 9000; display: flex; }
+        .close-player { position: absolute; top: 20px; right: 20px; color: white; font-size: 30px; cursor: pointer; z-index: 10000; background: var(--red); border: none; border-radius: 50%; width: 45px; height: 45px; }
     </style>
 </head>
 <body>
 
-    <header id="main-header">
-        <div class="header-left">
-            <i class="fas fa-bars fa-lg" style="cursor:pointer" onclick="ui.toggleSidebar()"></i>
-            <span class="logo" onclick="location.reload()">MASTER FLIX</span>
+    <header>
+        <div class="header-left" style="display:flex; align-items:center; gap:15px;">
+            <i class="fas fa-bars fa-lg" style="cursor:pointer"></i>
+            <div class="logo">MASTER<br>FLIX</div>
         </div>
-        <div class="header-right">
-            <div class="search-box">
-                <i class="fas fa-search" style="color:#888"></i>
-                <input type="text" id="search-input" placeholder="Títulos, gêneros..." onkeyup="app.search()">
-            </div>
-            <button id="btn-adm" class="admin-btn hidden" onclick="ui.toggleAdmin()">PAINEL MASTER</button>
+        <div class="search-container">
+            <i class="fas fa-search"></i>
+            <input type="text" id="search-input" placeholder="Títulos, Gêneros..." onkeyup="app.search()">
         </div>
+        <button id="btn-painel-adm" class="btn-painel hidden" onclick="ui.toggleAdmin()">
+            <i class="fas fa-crown"></i> PAINEL
+        </button>
     </header>
 
-    <div id="sidebar-overlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:2500; display:none" onclick="ui.toggleSidebar()"></div>
-    <nav id="sidebar">
-        <ul class="menu-list">
-            <li onclick="location.reload()"><i class="fas fa-home"></i> Início</li>
-            <li onclick="ui.toggleSubmenu('sub-filmes')">
-                <span><i class="fas fa-film"></i> Filmes</span>
-                <i class="fas fa-chevron-down"></i>
-            </li>
-            <ul id="sub-filmes" class="submenu">
-                <li onclick="app.filter('Ação')">Ação</li>
-                <li onclick="app.filter('Terror')">Terror</li>
-                <li onclick="app.filter('Comédia')">Comédia</li>
-                <li onclick="app.filter('Ficção')">Ficção</li>
-            </ul>
-            <li onclick="app.filter('Séries')"><i class="fas fa-tv"></i> Séries</li>
-            <li onclick="app.filter('Infantil')"><i class="fas fa-child"></i> Kids</li>
-            <li onclick="app.filter('Favoritos')"><i class="fas fa-heart" style="color:var(--red)"></i> Minha Lista</li>
-            <li style="color:var(--red); border-top: 1px solid #222; margin-top: 20px;" onclick="auth.signOut()"><i class="fas fa-sign-out-alt"></i> Sair da Conta</li>
-        </ul>
-    </nav>
-
-    <main class="content-area">
+    <main>
         <div id="admin-panel" class="admin-box hidden">
+            <h2>Gerenciamento Master</h2>
             <div class="admin-tabs">
-                <button class="tab-link active" onclick="ui.switchTab(event, 'tab-post')">POSTAR</button>
-                <button class="tab-link" onclick="ui.switchTab(event, 'tab-users')">GERIR USUÁRIOS</button>
-                <button class="tab-link" onclick="ui.switchTab(event, 'tab-conn')">CONEXÕES NUVEM</button>
+                <button class="tab-btn active" onclick="ui.switchTab('media', event)">Mídias</button>
+                <button class="tab-btn" onclick="ui.switchTab('users', event)">Usuários</button>
+                <button class="tab-btn" onclick="ui.switchTab('sync', event)">Sincronizar Nuvem</button>
             </div>
 
-            <div id="tab-post" class="tab-content">
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <input type="text" id="tmdb-id" placeholder="ID TMDB (Ex: 550)">
-                    <input type="text" id="sub-cat" placeholder="Gênero manual">
-                </div>
-                <input type="text" id="video-url" placeholder="Link Direto do Vídeo (.mp4)">
-                <button onclick="app.post()" class="btn-post"><i class="fas fa-cloud-upload-alt"></i> PUBLICAR NO CATÁLOGO</button>
+            <div id="adm-content-media">
+                <input type="text" id="tmdb-id" placeholder="ID TMDB (Ex: 550)">
+                <input type="text" id="manual-cat" placeholder="Categoria (Ação, Terror, Séries...)">
+                <input type="text" id="video-url" placeholder="URL do Vídeo (.mp4)">
+                <button class="btn-publicar" onclick="app.post()">Publicar no Catálogo</button>
             </div>
 
-            <div id="tab-users" class="tab-content hidden">
-                <div id="users-list-container"></div>
+            <div id="adm-content-users" class="hidden">
+                <div id="user-list" style="max-height: 300px; overflow-y: auto;"></div>
             </div>
 
-            <div id="tab-conn" class="tab-content hidden">
-                <div style="display:flex; gap:10px;">
-                    <select id="c-type" style="flex:1;"><option value="gdrive">Google Drive</option><option value="dropbox">Dropbox</option></select>
-                    <input type="text" id="c-name" placeholder="Apelido da Conta" style="flex:1;">
-                </div>
-                <input type="text" id="c-key" placeholder="API Key / Token de Acesso">
-                <input type="text" id="c-folder" placeholder="ID da Pasta">
-                <button onclick="app.saveConn()" class="btn-post" style="background:#1da1f2;">ADICIONAR CONTA</button>
-                <div id="conns-list" style="margin-top:15px;"></div>
+            <div id="adm-content-sync" class="hidden">
+                <input type="text" id="drive-key" placeholder="API KEY Google Drive">
+                <input type="text" id="drive-folder" placeholder="ID da Pasta do Drive">
+                <button class="btn-publicar" style="background:#1da1f2" onclick="app.syncDrive()">VARRER GOOGLE DRIVE</button>
             </div>
         </div>
-        
-        <div id="catalog-area"></div>
+
+        <div id="catalog-area" class="catalog-container">
+            </div>
     </main>
 
     <div id="modal-details" class="modal-overlay hidden" onclick="ui.closeModal()">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div id="m-preview" style="height:300px; background-size:cover; background-position:center; position:relative;">
-                <div style="position:absolute; inset:0; background:linear-gradient(transparent, #181818);"></div>
-            </div>
-            <div class="modal-body">
-                <h1 id="m-title" style="margin-bottom:10px;"></h1>
-                <p id="m-sinopse" style="color:#aaa; font-size:14px; margin-bottom:20px; max-height:100px; overflow-y:auto;"></p>
-                <div style="display:flex; gap:10px;">
-                    <button class="btn-post" onclick="ui.play()" style="flex:2; margin:0;"><i class="fas fa-play"></i> ASSISTIR</button>
-                    <button id="btn-fav" class="btn-post" style="flex:1; margin:0; background:#333;"><i class="fas fa-plus"></i> LISTA</button>
-                </div>
+            <div id="m-banner" style="height:250px; background-size:cover; background-position:center;"></div>
+            <div style="padding:25px;">
+                <h2 id="m-title" style="margin-bottom:10px;"></h2>
+                <p id="m-sinopse" style="font-size:14px; color:#aaa; line-height:1.5; margin-bottom:20px;"></p>
+                <button class="btn-publicar" onclick="ui.play()">ASSISTIR AGORA</button>
             </div>
         </div>
     </div>
@@ -181,27 +128,20 @@
         let allMedia = [], currentUser = null, activeMedia = null;
 
         const ui = {
-            toggleSidebar: () => {
-                const s = document.getElementById('sidebar'), o = document.getElementById('sidebar-overlay');
-                s.classList.toggle('open');
-                o.style.display = s.classList.contains('open') ? 'block' : 'none';
-            },
-            toggleSubmenu: (id) => document.getElementById(id).classList.toggle('active'),
             toggleAdmin: () => document.getElementById('admin-panel').classList.toggle('hidden'),
-            switchTab: (e, tabId) => {
-                document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
-                document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
-                document.getElementById(tabId).classList.remove('hidden');
+            switchTab: (tab, e) => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
                 e.target.classList.add('active');
-                if(tabId === 'tab-users') app.loadUsers();
-                if(tabId === 'tab-conn') app.loadConns();
+                ['media', 'users', 'sync'].forEach(t => document.getElementById('adm-content-'+t).classList.add('hidden'));
+                document.getElementById('adm-content-'+tab).classList.remove('hidden');
+                if(tab === 'users') app.loadUsers();
             },
             closeModal: () => document.getElementById('modal-details').classList.add('hidden'),
             play: (time = 0) => {
                 ui.closeModal();
                 document.getElementById('player-overlay').classList.remove('hidden');
-                document.getElementById('v-container').innerHTML = `<video id="video-core" controls autoplay style="width:100%;height:100%"><source src="${activeMedia.video}"></video>`;
-                const v = document.getElementById('video-core');
+                document.getElementById('v-container').innerHTML = `<video id="main-v" controls autoplay style="width:100%;height:100%"><source src="${activeMedia.video}" type="video/mp4"></video>`;
+                const v = document.getElementById('main-v');
                 if(time) v.currentTime = time;
                 v.ontimeupdate = () => { if(Math.floor(v.currentTime) % 10 === 0) app.saveProgress(v.currentTime); };
             },
@@ -210,98 +150,77 @@
 
         const app = {
             init: () => {
-                auth.onAuthStateChanged(async (user) => {
+                auth.onAuthStateChanged(user => {
                     if (user) {
-                        const snap = await db.ref('users/' + user.uid).once('value');
-                        currentUser = snap.val() || {}; currentUser.uid = user.uid;
-                        if(currentUser.role === 'admin') document.getElementById('btn-adm').classList.remove('hidden');
-                        app.loadCatalog();
-                    } else { /* Evita loop - coloque sua lógica de login aqui se necessário */ }
+                        db.ref('users/' + user.uid).on('value', snap => {
+                            currentUser = snap.val() || {}; currentUser.uid = user.uid;
+                            if(currentUser.role === 'admin') document.getElementById('btn-painel-adm').classList.remove('hidden');
+                            app.loadCatalog();
+                        });
+                    }
                 });
             },
             loadCatalog: () => {
                 db.ref('catalog').on('value', snap => {
                     const area = document.getElementById('catalog-area');
                     area.innerHTML = ""; allMedia = [];
-                    snap.forEach(i => { const m = i.val(); m.key = i.key; allMedia.push(m); });
+                    if(!snap.exists()) return;
 
-                    // Seção Continuar Assistindo
-                    db.ref(`users/${currentUser.uid}/progress`).once('value', pSnap => {
-                        if(pSnap.exists()) app.renderSection(area, "Continuar Assistindo", Object.values(pSnap.val()).map(x => ({...x.media, time: x.time})));
-                        
-                        // Categorias Dinâmicas
-                        const groups = {};
-                        allMedia.forEach(m => {
-                            const cat = m.genre || m.category || "Destaques";
-                            if(!groups[cat]) groups[cat] = [];
-                            groups[cat].push(m);
-                        });
-                        for(let name in groups) app.renderSection(area, name, groups[name]);
+                    snap.forEach(child => { const m = child.val(); m.key = child.key; allMedia.push(m); });
+
+                    // Filtro de Categorias (Resolvendo o undefined)
+                    const groups = {};
+                    allMedia.forEach(m => {
+                        const cat = m.category || "Lançamentos";
+                        if(!groups[cat]) groups[cat] = [];
+                        groups[cat].push(m);
                     });
+
+                    // Renderização das fileiras
+                    for(let name in groups) {
+                        const section = document.createElement('div');
+                        section.innerHTML = `<h2 class="section-title">${name}</h2><div class="row"></div>`;
+                        const row = section.querySelector('.row');
+                        groups[name].forEach(m => {
+                            const card = document.createElement('div');
+                            card.className = "card";
+                            card.style.backgroundImage = `url(${m.img})`;
+                            card.onclick = () => app.details(m);
+                            row.appendChild(card);
+                        });
+                        area.appendChild(section);
+                    }
                 });
-            },
-            renderSection: (container, title, items) => {
-                const section = document.createElement('div');
-                section.className = "section-container";
-                section.innerHTML = `<h2 class="section-title">${title}</h2><div class="carousel-cards"></div>`;
-                const row = section.querySelector('.carousel-cards');
-                items.forEach(m => {
-                    const card = document.createElement('div');
-                    card.className = "card";
-                    card.style.backgroundImage = `url(${m.img})`;
-                    if(m.time) card.innerHTML = `<div class="card-progress" style="width:70%"></div>`;
-                    card.onclick = () => { activeMedia = m; m.time ? ui.play(m.time) : app.details(m); };
-                    row.appendChild(card);
-                });
-                container.appendChild(section);
             },
             details: (m) => {
                 activeMedia = m;
-                document.getElementById('m-preview').style.backgroundImage = `url(${m.img})`;
+                document.getElementById('m-banner').style.backgroundImage = `url(${m.img})`;
                 document.getElementById('m-title').innerText = m.title;
                 document.getElementById('m-sinopse').innerText = m.sinopse;
-                document.getElementById('btn-fav').onclick = () => app.toggleFav(m);
                 document.getElementById('modal-details').classList.remove('hidden');
-            },
-            search: () => {
-                const term = document.getElementById('search-input').value.toLowerCase();
-                if(term.length < 2) return app.loadCatalog();
-                const filtered = allMedia.filter(m => m.title.toLowerCase().includes(term));
-                const area = document.getElementById('catalog-area');
-                area.innerHTML = "";
-                app.renderSection(area, "Resultados da Busca", filtered);
             },
             post: async () => {
                 const id = document.getElementById('tmdb-id').value;
+                const cat = document.getElementById('manual-cat').value;
                 const url = document.getElementById('video-url').value;
-                const cat = document.getElementById('sub-cat').value;
-                if(!id || !url) return alert("Preencha ID e Link!");
-                
+                if(!id || !url) return alert("Erro: ID e URL são obrigatórios!");
+
                 const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=2eaf2fd731f81a77741ecb625b588a40&language=pt-BR`);
                 const d = await res.json();
-                db.ref('catalog').push({ title: d.title, img: `https://image.tmdb.org/t/p/w500${d.poster_path}`, sinopse: d.overview, video: url, genre: cat || (d.genres[0].name) });
-                alert("Sucesso Master!");
+                db.ref('catalog').push({ title: d.title, img: `https://image.tmdb.org/t/p/w500${d.poster_path}`, sinopse: d.overview, video: url, category: cat || "Filmes" });
+                alert("Mídia publicada com sucesso Master!");
             },
-            loadUsers: () => {
-                const container = document.getElementById('users-list-container');
-                db.ref('users').on('value', snap => {
-                    container.innerHTML = "";
-                    snap.forEach(u => {
-                        const user = u.val();
-                        container.innerHTML += `
-                        <div class="user-item">
-                            <div class="user-info"><p><strong>${user.email}</strong></p><p>Status: ${user.blocked ? 'Bloqueado' : 'Ativo'}</p></div>
-                            <div class="user-actions">
-                                <button class="btn-u" style="background:#25d366" onclick="window.open('https://wa.me/${user.phone}')"><i class="fab fa-whatsapp"></i></button>
-                                <button class="btn-u" style="background:#444" onclick="app.setExpiry('${u.key}')"><i class="fas fa-calendar"></i></button>
-                                <button class="btn-u" style="background:${user.blocked ? 'green' : 'red'}" onclick="app.block('${u.key}', ${user.blocked})"><i class="fas fa-ban"></i></button>
-                            </div>
-                        </div>`;
-                    });
+            search: () => {
+                const term = document.getElementById('search-input').value.toLowerCase();
+                const cards = document.querySelectorAll('.card');
+                allMedia.forEach((m, index) => {
+                    const isMatch = m.title.toLowerCase().includes(term);
+                    cards[index].style.display = isMatch ? 'block' : 'none';
                 });
             },
-            saveProgress: (time) => { if(currentUser) db.ref(`users/${currentUser.uid}/progress/${activeMedia.key}`).set({ time, media: activeMedia }); }
+            saveProgress: (t) => { if(currentUser && activeMedia) db.ref(`users/${currentUser.uid}/progress/${activeMedia.key}`).update({ time: t, media: activeMedia }); }
         };
+
         window.onload = app.init;
     </script>
 </body>
