@@ -54,7 +54,8 @@
             
             <div class="tabs">
                 <button class="tab-btn active" onclick="ui.switchTab('media', event)">POSTAR</button>
-                <button class="tab-btn" onclick="ui.switchTab('config', event)">APIs / CHAVES</button>
+                <button class="tab-btn" onclick="ui.switchTab('users', event)">USUÁRIOS</button>
+                <button class="tab-btn" onclick="ui.switchTab('config', event)">GERENCIAR APIs</button>
             </div>
 
             <div id="tab-media" class="tab-content">
@@ -70,15 +71,28 @@
                 </select>
                 <input type="text" id="video-url" placeholder="Link do Vídeo (Drive, Drop ou MP4)">
                 <div id="preview-area"></div>
-                <button onclick="app.postMedia()" class="btn-save">PUBLICAR CONTEÚDO</button>
+                <button onclick="app.postMedia()" class="btn-save">PUBLICAR AGORA</button>
+            </div>
+
+            <div id="tab-users" class="tab-content hidden">
+                <div id="users-display-list" class="list-container">
+                    </div>
             </div>
 
             <div id="tab-config" class="tab-content hidden">
-                <label>Google Drive API Key:</label>
-                <input type="password" id="gdrive-key" placeholder="Insira sua chave Google">
-                <label>Dropbox Access Token:</label>
-                <input type="password" id="dropbox-token" placeholder="Insira seu token Dropbox">
-                <button onclick="app.saveApiKeys()" class="btn-save">SALVAR CHAVES</button>
+                <div class="api-form">
+                    <input type="text" id="api-label" placeholder="Nome da Chave (Ex: Google 01)">
+                    <input type="password" id="api-value" placeholder="Chave de API / Token">
+                    <select id="api-type">
+                        <option value="gdrive">Google Drive (API Key)</option>
+                        <option value="dropbox">Dropbox (Token)</option>
+                    </select>
+                    <button onclick="app.saveApiKey()" class="btn-save">ADICIONAR CHAVE</button>
+                </div>
+                <hr style="margin: 20px 0; border: 0; border-top: 1px solid #333;">
+                <h3>Chaves Ativas:</h3>
+                <div id="api-keys-list" class="list-container">
+                    </div>
             </div>
         </div>
 
@@ -91,10 +105,8 @@
             <div class="modal-info">
                 <h1 id="modal-title"></h1>
                 <div class="modal-meta"><span id="modal-cat" class="tag"></span></div>
-                <p id="modal-desc" style="max-height: 150px; overflow-y: auto;"></p>
-                <button class="btn-play" onclick="ui.startPlayer()">
-                    <i class="fas fa-play"></i> ASSISTIR
-                </button>
+                <p id="modal-desc"></p>
+                <button class="btn-play" onclick="ui.startPlayer()"><i class="fas fa-play"></i> ASSISTIR</button>
             </div>
         </div>
     </div>
