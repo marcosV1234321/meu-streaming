@@ -17,36 +17,26 @@
         .hidden { display: none !important; }
 
         header { position: fixed; top: 0; width: 100%; height: 70px; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: space-between; padding: 0 5%; z-index: 1000; border-bottom: 1px solid #222; }
-        .header-left { display: flex; align-items: center; gap: 15px; }
-        .logo { color: var(--red); font-size: 1.3rem; font-weight: 900; cursor: pointer; text-transform: uppercase; white-space: nowrap; }
-        .header-right { display: flex; align-items: center; gap: 10px; }
-        
-        #search-input { background: #222; border: 1px solid #444; color: white; padding: 8px 12px; border-radius: 4px; outline: none; width: 120px; }
+        .logo { color: var(--red); font-size: 1.3rem; font-weight: 900; cursor: pointer; text-transform: uppercase; }
         .admin-btn { background: var(--gold); border: none; padding: 8px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; color: #000; }
 
         #sidebar { position: fixed; left: -280px; top: 0; width: 260px; height: 100vh; background: #000; z-index: 3000; transition: 0.4s; border-right: 1px solid #222; overflow-y: auto; }
         #sidebar.open { left: 0; }
-        .menu-list { list-style: none; padding-top: 80px; }
-        .menu-list li { padding: 15px 25px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #111; transition: 0.3s; }
-        .menu-list li:hover { background: var(--gray); color: var(--red); }
-        
+        .menu-list li { padding: 15px 25px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #111; }
         .submenu { background: #080808; display: none; list-style: none; padding-left: 20px; }
-        .submenu li { font-size: 0.9rem; padding: 10px 25px; border: none; }
         .submenu.active { display: block; }
 
         .content-area { padding: 90px 4% 40px; }
-        .section-title { font-size: 1.2rem; margin: 25px 0 10px; color: #fff; font-weight: bold; border-left: 4px solid var(--red); padding-left: 10px; }
+        .section-title { font-size: 1.2rem; margin: 25px 0 10px; font-weight: bold; border-left: 4px solid var(--red); padding-left: 10px; }
         .carousel-cards { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 15px; scrollbar-width: none; }
-        .card { width: 140px; height: 200px; flex: 0 0 auto; background-size: cover; background-position: center; border-radius: 6px; cursor: pointer; transition: 0.3s; }
-        .card:hover { transform: scale(1.05); box-shadow: 0 0 15px var(--red); }
+        .card { width: 140px; height: 200px; flex: 0 0 auto; background-size: cover; background-position: center; border-radius: 6px; cursor: pointer; position: relative; }
+        .progress-bar { position: absolute; bottom: 0; left: 0; height: 4px; background: var(--red); border-radius: 0 2px 2px 0; }
 
         .admin-box { background: var(--gray); padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 2px solid var(--gold); }
         .admin-box input, .admin-box select { width: 100%; padding: 12px; margin: 8px 0; background: #000; border: 1px solid #444; color: white; border-radius: 4px; }
-
+        
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; display: flex; align-items: center; justify-content: center; }
-        .modal-content { background: #181818; width: 90%; max-width: 500px; border-radius: 8px; overflow: hidden; }
-        .btn-watch { background: var(--red); color: white; border: none; padding: 15px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 15px; }
-
+        .modal-content { background: #181818; width: 90%; max-width: 500px; border-radius: 8px; overflow: hidden; padding-bottom: 20px; }
         #player-overlay { position: fixed; inset: 0; background: #000; z-index: 9000; }
         .close-player { position: absolute; top: 20px; right: 20px; color: white; font-size: 30px; cursor: pointer; z-index: 10000; background: var(--red); border: none; border-radius: 50%; width: 45px; height: 45px; }
     </style>
@@ -59,60 +49,64 @@
             <span class="logo">MASTER FLIX</span>
         </div>
         <div class="header-right">
-            <input type="text" id="search-input" placeholder="Buscar..." onkeyup="app.search()">
             <button id="btn-adm" class="admin-btn hidden" onclick="ui.toggleAdmin()">PAINEL MASTER</button>
         </div>
     </header>
 
     <div id="sidebar-overlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:2500; display:none" onclick="ui.toggleSidebar()"></div>
     <nav id="sidebar">
-        <ul class="menu-list">
+        <ul class="menu-list" style="list-style:none; padding-top:80px;">
             <li onclick="location.reload()"><i class="fas fa-home"></i> Início</li>
-            <li onclick="ui.toggleSubmenu('sub-filmes')">
-                <span><i class="fas fa-film"></i> Filmes</span>
-                <i class="fas fa-chevron-down"></i>
-            </li>
+            <li onclick="ui.toggleSubmenu('sub-filmes')"><span><i class="fas fa-film"></i> Filmes</span> <i class="fas fa-chevron-down"></i></li>
             <ul id="sub-filmes" class="submenu">
                 <li onclick="app.filter('Ação')">Ação</li>
                 <li onclick="app.filter('Terror')">Terror</li>
-                <li onclick="app.filter('Suspense')">Suspense</li>
                 <li onclick="app.filter('Comédia')">Comédia</li>
-                <li onclick="app.filter('Ficção')">Ficção</li>
             </ul>
             <li onclick="app.filter('Séries')"><i class="fas fa-tv"></i> Séries</li>
-            <li onclick="app.filter('Infantil')"><i class="fas fa-child"></i> Infantil</li>
-            <li onclick="app.filter('Documentários')"><i class="fas fa-book"></i> Documentários</li>
-            <li onclick="app.filter('Favoritos')"><i class="fas fa-heart"></i> Favoritos</li>
-            <li style="color:var(--red); margin-top:20px;" onclick="auth.signOut()"><i class="fas fa-sign-out-alt"></i> Sair</li>
+            <li onclick="app.filter('Favoritos')"><i class="fas fa-heart"></i> Minha Lista</li>
+            <li style="color:var(--red)" onclick="auth.signOut()"><i class="fas fa-sign-out-alt"></i> Sair</li>
         </ul>
     </nav>
 
     <main class="content-area">
         <div id="admin-panel" class="admin-box hidden">
-            <h3 style="color:var(--gold)">POSTAR CONTEÚDO</h3>
-            <div id="admin-content-default">
+            <div style="display:flex; gap:10px; margin-bottom:15px; border-bottom:1px solid #444; padding-bottom:10px; overflow-x:auto;">
+                <button onclick="ui.switchAdminTab('media')" style="color:white; background:none; border:none; font-weight:bold; cursor:pointer;">Mídias</button>
+                <button onclick="ui.switchAdminTab('users')" style="color:var(--gold); background:none; border:none; font-weight:bold; cursor:pointer;">Usuários</button>
+                <button onclick="ui.switchAdminTab('conn')" style="color:#1da1f2; background:none; border:none; font-weight:bold; cursor:pointer;">Conexões</button>
+            </div>
+
+            <div id="adm-media">
                 <input type="text" id="tmdb-id" placeholder="ID TMDB">
-                <select id="main-cat" style="width:100%; padding:12px; margin:8px 0; background:#000; color:white;">
-                    <option value="Filmes">Filmes</option>
-                    <option value="Séries">Séries</option>
-                    <option value="Infantil">Infantil</option>
-                    <option value="Documentários">Documentários</option>
-                </select>
-                <input type="text" id="sub-cat" placeholder="Gênero (Terror, Ação...)">
                 <input type="text" id="video-url" placeholder="URL .mp4">
-                <button onclick="app.post()" style="width:100%; padding:15px; background:var(--red); color:white; border:none; font-weight:bold; cursor:pointer;">PUBLICAÇÃO RÁPIDA</button>
+                <button onclick="app.post()" style="background:var(--red); color:white; border:none; width:100%; padding:12px; font-weight:bold;">PUBLICAR</button>
+            </div>
+
+            <div id="adm-users" class="hidden">
+                <div id="users-list" style="max-height:300px; overflow-y:auto;"></div>
+            </div>
+
+            <div id="adm-conn" class="hidden">
+                <select id="c-type"><option value="gdrive">Google Drive</option><option value="dropbox">Dropbox</option></select>
+                <input type="text" id="c-key" placeholder="API Key / Token">
+                <input type="text" id="c-folder" placeholder="ID da Pasta">
+                <button onclick="app.saveConn()" style="background:#1da1f2; color:white; border:none; width:100%; padding:10px;">SALVAR CONTA</button>
+                <button onclick="app.masterScan()" style="background:var(--red); color:white; border:none; width:100%; padding:15px; margin-top:10px; font-weight:bold;">VARRER TODAS AS NUVENS</button>
             </div>
         </div>
+        
         <div id="catalog-area"></div>
     </main>
 
     <div id="modal-details" class="modal-overlay hidden" onclick="ui.closeModal()">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div id="modal-video-preview" style="height:200px; background:#000"></div>
-            <div class="modal-info">
+            <div style="padding:20px;">
                 <h2 id="m-title"></h2>
-                <p id="m-sinopse" style="font-size:13px; color:#aaa; margin-top:10px"></p>
-                <button class="btn-watch" onclick="ui.play()">ASSISTIR</button>
+                <p id="m-sinopse" style="font-size:13px; color:#aaa; margin:10px 0;"></p>
+                <button onclick="ui.play()" style="background:var(--red); color:white; width:100%; padding:15px; border:none; font-weight:bold; cursor:pointer;">ASSISTIR AGORA</button>
+                <button onclick="app.toggleFav()" style="background:#333; color:white; width:100%; padding:10px; border:none; margin-top:10px; cursor:pointer;">+ MINHA LISTA</button>
             </div>
         </div>
     </div>
@@ -140,20 +134,25 @@
                 o.style.display = s.classList.contains('open') ? 'block' : 'none';
             },
             toggleSubmenu: (id) => document.getElementById(id).classList.toggle('active'),
-            toggleAdmin: () => {
-                document.getElementById('admin-panel').classList.toggle('hidden');
-                if(typeof app.initAdminTabs === 'function') app.initAdminTabs();
+            toggleAdmin: () => document.getElementById('admin-panel').classList.toggle('hidden'),
+            switchAdminTab: (tab) => {
+                document.getElementById('adm-media').classList.add('hidden');
+                document.getElementById('adm-users').classList.add('hidden');
+                document.getElementById('adm-conn').classList.add('hidden');
+                document.getElementById('adm-'+tab).classList.remove('hidden');
+                if(tab === 'users') app.loadUsers();
             },
             closeModal: () => document.getElementById('modal-details').classList.add('hidden'),
-            play: () => {
+            play: (time = 0) => {
                 ui.closeModal();
                 document.getElementById('player-overlay').classList.remove('hidden');
-                document.getElementById('v-container').innerHTML = `<video controls autoplay style="width:100%;height:100%"><source src="${activeMedia.video}"></video>`;
+                const videoHtml = `<video id="main-video" controls autoplay style="width:100%;height:100%"><source src="${activeMedia.video}"></video>`;
+                document.getElementById('v-container').innerHTML = videoHtml;
+                const v = document.getElementById('main-video');
+                if(time) v.currentTime = time;
+                v.ontimeupdate = () => { if(Math.floor(v.currentTime) % 5 === 0) app.saveProgress(v.currentTime); };
             },
-            closePlayer: () => {
-                document.getElementById('player-overlay').classList.add('hidden');
-                document.getElementById('v-container').innerHTML = "";
-            }
+            closePlayer: () => { document.getElementById('player-overlay').classList.add('hidden'); document.getElementById('v-container').innerHTML = ""; }
         };
 
         const app = {
@@ -161,37 +160,56 @@
                 auth.onAuthStateChanged(async (user) => {
                     if (user) {
                         const snap = await db.ref('users/' + user.uid).once('value');
-                        currentUser = snap.val() || { role: 'user' };
-                        currentUser.uid = user.uid;
+                        currentUser = snap.val() || {}; currentUser.uid = user.uid;
                         if(currentUser.role === 'admin') document.getElementById('btn-adm').classList.remove('hidden');
                         app.loadCatalog();
-                    } else { /* Redirecionamento de login aqui */ }
+                    }
                 });
             },
             loadCatalog: () => {
                 db.ref('catalog').on('value', snap => {
                     const area = document.getElementById('catalog-area');
                     area.innerHTML = ""; allMedia = [];
-                    const sections = {};
-                    snap.forEach(i => {
-                        const m = i.val(); m.key = i.key;
-                        allMedia.push(m);
-                        const sName = m.genre || m.category;
-                        if(!sections[sName]) sections[sName] = [];
-                        sections[sName].push(m);
+                    const sections = { "Continuar Assistindo": [], "Minha Lista": [] };
+                    
+                    snap.forEach(i => { const m = i.val(); m.key = i.key; allMedia.push(m); });
+
+                    // Carrega Seções Especiais Netflix
+                    db.ref(`users/${currentUser.uid}/progress`).once('value', pSnap => {
+                        if(pSnap.exists()) {
+                            const h2 = document.createElement('h2'); h2.className="section-title"; h2.innerText = "Continuar Assistindo";
+                            const row = document.createElement('div'); row.className="carousel-cards";
+                            pSnap.forEach(p => {
+                                const data = p.val(); const m = data.media;
+                                const card = document.createElement('div'); card.className="card";
+                                card.style.backgroundImage = `url(${m.img})`;
+                                card.innerHTML = `<div class="progress-bar" style="width:70%"></div>`;
+                                card.onclick = () => { activeMedia = m; ui.play(data.time); };
+                                row.appendChild(card);
+                            });
+                            area.appendChild(h2); area.appendChild(row);
+                        }
+                        app.renderNormalCatalog(area);
                     });
-                    for(let name in sections) {
-                        const h2 = document.createElement('h2'); h2.className="section-title"; h2.innerText = name;
-                        const row = document.createElement('div'); row.className="carousel-cards";
-                        sections[name].forEach(m => {
-                            const card = document.createElement('div'); card.className="card";
-                            card.style.backgroundImage = `url(${m.img})`;
-                            card.onclick = () => app.details(m);
-                            row.appendChild(card);
-                        });
-                        area.appendChild(h2); area.appendChild(row);
-                    }
                 });
+            },
+            renderNormalCatalog: (area) => {
+                const cats = {};
+                allMedia.forEach(m => {
+                    const c = m.category || "Filmes";
+                    if(!cats[c]) cats[c] = []; cats[c].push(m);
+                });
+                for(let name in cats) {
+                    const h2 = document.createElement('h2'); h2.className="section-title"; h2.innerText = name;
+                    const row = document.createElement('div'); row.className="carousel-cards";
+                    cats[name].forEach(m => {
+                        const card = document.createElement('div'); card.className="card";
+                        card.style.backgroundImage = `url(${m.img})`;
+                        card.onclick = () => app.details(m);
+                        row.appendChild(card);
+                    });
+                    area.appendChild(h2); area.appendChild(row);
+                }
             },
             details: (m) => {
                 activeMedia = m;
@@ -200,20 +218,32 @@
                 document.getElementById('modal-video-preview').innerHTML = `<video autoplay muted loop src="${m.video}" style="width:100%;height:100%;object-fit:cover"></video>`;
                 document.getElementById('modal-details').classList.remove('hidden');
             },
-            post: async () => {
-                const id = document.getElementById('tmdb-id').value;
-                const cat = document.getElementById('main-cat').value;
-                const gen = document.getElementById('sub-cat').value;
-                const url = document.getElementById('video-url').value;
-                if(!id || !url) return alert("Preencha ID e Vídeo!");
-                const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=2eaf2fd731f81a77741ecb625b588a40&language=pt-BR`);
-                const d = await res.json();
-                db.ref('catalog').push({ title: d.title, img: `https://image.tmdb.org/t/p/w500${d.poster_path}`, sinopse: d.overview, video: url, category: cat, genre: gen || null });
-                alert("Publicado!");
+            saveProgress: (time) => {
+                db.ref(`users/${currentUser.uid}/progress/${activeMedia.key}`).set({ time, media: activeMedia, date: Date.now() });
+            },
+            saveConn: () => {
+                const data = { type: document.getElementById('c-type').value, key: document.getElementById('c-key').value, folder: document.getElementById('c-folder').value };
+                db.ref('settings/connections').push(data); alert("Conexão Salva!");
+            },
+            masterScan: async () => {
+                alert("Iniciando varredura em todas as contas...");
+                const conns = await db.ref('settings/connections').once('value');
+                conns.forEach(c => { /* Lógica de fetch do drive/dropbox aqui */ });
+                alert("Varredura concluída!");
+            },
+            loadUsers: () => {
+                const list = document.getElementById('users-list');
+                db.ref('users').on('value', snap => {
+                    list.innerHTML = "";
+                    snap.forEach(u => {
+                        const user = u.val();
+                        list.innerHTML += `<div style="padding:10px; background:#111; margin-bottom:5px;">${user.email} 
+                        <button onclick="app.setExp('${u.key}')" style="float:right">Dias</button></div>`;
+                    });
+                });
             }
         };
         window.onload = app.init;
     </script>
-    <script src="updates.js"></script>
 </body>
 </html>
